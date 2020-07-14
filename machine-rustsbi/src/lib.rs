@@ -2,6 +2,8 @@
 
 extern crate alloc;
 
+#[doc(hidden)]
+#[macro_use]
 pub mod legacy_stdio;
 pub mod ecall;
 

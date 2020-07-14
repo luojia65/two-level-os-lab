@@ -6,11 +6,18 @@ MEMORY {
 PROVIDE(_stext = 0x80000000);
 PROVIDE(_heap_size = 20K);
 
-/* 目标架构 */
+REGION_ALIAS("REGION_TEXT", SRAM);
+REGION_ALIAS("REGION_RODATA", SRAM);
+REGION_ALIAS("REGION_DATA", SRAM);
+REGION_ALIAS("REGION_BSS", SRAM);
+REGION_ALIAS("REGION_HEAP", SRAM);
+REGION_ALIAS("REGION_STACK", SRAM);
+
 OUTPUT_ARCH(riscv)
 
-/* 执行入口 */
 ENTRY(_start)
+
+PROVIDE(_stack_start = ORIGIN(REGION_STACK) + LENGTH(REGION_STACK));
 
 SECTIONS
 {
@@ -21,7 +28,7 @@ SECTIONS
         /* 要链接的文件的 .text 字段集中放在这里 */
         *(.text .text.*)
         _etext = .;
-    } > SRAM
+    } > REGION_TEXT
 
     /* .rodata 字段 */
     .rodata : ALIGN(4) {
@@ -30,7 +37,7 @@ SECTIONS
         *(.rodata .rodata.*)
         . = ALIGN(4);
         _erodata = .;
-    } > SRAM
+    } > REGION_RODATA
 
     /* .data 字段 */
     .data : ALIGN(4) { 
@@ -43,7 +50,7 @@ SECTIONS
         *(.data .data.*)
         . = ALIGN(4);
         _edata = .;
-    } > SRAM
+    } > REGION_DATA
 
     /* .bss 字段 */
     .bss (NOLOAD) : {
@@ -52,21 +59,22 @@ SECTIONS
         *(.sbss .bss .bss.*)
         . = ALIGN(4);
         _ebss = .;
-    } > SRAM
+    } > REGION_BSS
 
     .heap (NOLOAD) : {
         _sheap = .;
         . += _heap_size;
         . = ALIGN(4);
         _eheap = .;
-    } > SRAM
+    } > REGION_HEAP
 
     /* fictitious region that represents the memory available for the stack */
     .stack (NOLOAD) : {
         _estack = .;
+        . = _stack_start;
         . = ALIGN(4);
         _sstack = .;
-    } > SRAM
+    } > REGION_STACK
 
     /* Discard .eh_frame, we are not doing unwind on panic so it is not needed */
     /DISCARD/ :
