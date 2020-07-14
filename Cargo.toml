@@ -2,4 +2,5 @@
 members = [
     "machine-app-qemu",
     "machine-rustsbi",
+    "supervisor-app",
 ]
