@@ -3,6 +3,7 @@
 #![feature(naked_functions)]
 #![feature(alloc_error_handler)]
 #![feature(llvm_asm)]
+#![feature(global_asm)]
 
 mod hal;
 
@@ -63,4 +64,11 @@ fn main() -> ! {
     ") };
 
     loop {}
+}
+
+static __TRAP_VECTOR: [usize; 16] = [0; 16]; // todo!!!
+
+#[export_name = "_supervisor_env_call"]
+fn exception() {
+    // todo!!!
 }
