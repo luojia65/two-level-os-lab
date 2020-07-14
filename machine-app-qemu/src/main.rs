@@ -49,5 +49,18 @@ fn main() -> ! {
 
     println!("正在启动RustSBI……");
     
+    unsafe { llvm_asm!("
+    .option push
+    .option norelax
+1:
+    auipc ra, %pcrel_hi(1f)
+    ld ra, %pcrel_lo(1b)(ra)
+    jr ra
+    .align  3
+1:
+    .dword 0x80200000
+.option pop
+    ") };
+
     loop {}
 }
