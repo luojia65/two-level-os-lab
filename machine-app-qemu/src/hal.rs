@@ -9,8 +9,6 @@ use core::ptr::{read_volatile, write_volatile};
 pub struct Ns16550a {
     base: usize,
     shift: usize,
-    clk: u64,
-    baud: u64,
 }
 
 impl Ns16550a {
@@ -35,7 +33,7 @@ impl Ns16550a {
             // No interrupt for now
         }
         // init finished
-        Self { base, shift, clk, baud }
+        Self { base, shift }
     }
 }
 

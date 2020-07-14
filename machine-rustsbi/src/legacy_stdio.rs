@@ -12,23 +12,18 @@ pub trait LegacyStdio: Send {
 }
 
 /// Use serial in `embedded-hal` as legacy standard input/output
-pub struct EmbeddedHalSerial<T> {
+struct EmbeddedHalSerial<T> {
     inner: T,
 }
 
 impl<T> EmbeddedHalSerial<T> {
     /// Create a wrapper with a value
-    pub fn new(inner: T) -> Self {
+    fn new(inner: T) -> Self {
         Self { inner }
-    }
-
-    /// Unwrap the struct to get underlying value
-    pub fn into_inner(self) -> T {
-        self.inner
     }
 }
 
-impl<T: Send> LegacyStdio for EmbeddedHalSerial<T>
+impl<'a, T: Send> LegacyStdio for EmbeddedHalSerial<&'a mut T>
 where
     T: Read<u8> + Write<u8>,
 {
@@ -55,8 +50,9 @@ lazy_static::lazy_static! {
 }
 
 #[doc(hidden)] // use through a macro
-pub unsafe fn init_legacy_stdio<T: LegacyStdio + 'static>(inner: T) {
-    *LEGACY_STDIO.lock() = Some(Box::new(inner));
+pub unsafe fn init_legacy_stdio_embedded_hal<T: Read<u8> + Write<u8> + Send + 'static>(serial: &mut T) {
+    let serial = EmbeddedHalSerial::new(&mut *(serial as *mut _));
+    *LEGACY_STDIO.lock() = Some(Box::new(serial));
 }
 
 pub(crate) fn legacy_stdio_putchar(ch: u8) {
