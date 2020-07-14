@@ -50,8 +50,9 @@ lazy_static::lazy_static! {
 }
 
 #[doc(hidden)] // use through a macro
-pub unsafe fn init_legacy_stdio_embedded_hal<T: Read<u8> + Write<u8> + Send + 'static>(serial: &mut T) {
-    let serial = EmbeddedHalSerial::new(&mut *(serial as *mut _));
+pub unsafe fn init_legacy_stdio_embedded_hal<T: Read<u8> + Write<u8> + Send + 'static>(mut serial: T) {
+    // serial is forgotten
+    let serial = EmbeddedHalSerial::new(&mut *(&mut serial as *mut _));
     *LEGACY_STDIO.lock() = Some(Box::new(serial));
 }
 
