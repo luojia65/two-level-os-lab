@@ -66,6 +66,12 @@ fn main() -> ! {
     _start_success:
         
     ") };
+    extern {
+        fn _start_trap();
+    }
+    unsafe { 
+        mtvec::write(_start_trap as usize, TrapMode::Direct);
+    }
     extern { 
         static mut _sheap: u8;
         static _heap_size: u8;
@@ -81,7 +87,9 @@ fn main() -> ! {
         let serial = hal::Ns16550a::new(0x10000000, 0, 11_059_200, 115200);
     
         unsafe { init_legacy_stdio_embedded_hal(serial); }
+
         println!("[rustsbi] Version 0.1.0");
+        
         println!(
 r#".______       __    __       _______.___________.  _______..______    __
 |   _  \     |  |  |  |     /       |           | /       ||   _  \  |  |
@@ -90,19 +98,14 @@ r#".______       __    __       _______.___________.  _______..______    __
 |  |\  \----.|  `--'  | .----)   |      |  |  .----)   |   |  |_)  | |  |
 | _| `._____| \______/  |_______/       |__|  |_______/    |______/  |__|"#);
         // println!("[rustsbi] Kernel entry: 0x80200000");
-    } // else wait for software interrupt
-
+    }// else wait for software interrupt
     extern {
-        fn _start_trap();
         fn _s_mode_start();
     }
-
-    unsafe { 
-        mtvec::write(_start_trap as usize, TrapMode::Direct);
+    unsafe {
         mepc::write(_s_mode_start as usize);
         mstatus::set_mpp(MPP::Supervisor);
     }
-    
     unsafe { llvm_asm!("
         csrr    a0, mhartid
         li      a1, 0x2333333366666666 /* todo */
@@ -138,6 +141,9 @@ global_asm!("
     .p2align 2
 _start_trap:
     csrrw   sp, mscratch, sp
+    bnez    sp, _not_from_m_boot
+    csrrw   sp, mscratch, zero
+_not_from_m_boot:
 
     addi    sp, sp, -16 * REGBYTES
 
@@ -216,7 +222,7 @@ extern fn start_trap_rust(trap_frame: &mut TrapFrame) {
         // 把返回值送还给TrapFrame
         trap_frame.a0 = ans.error;
         trap_frame.a1 = ans.value;
+    } else {
+        loop {} // cannot handle this
     }
-
-    loop {}
 }
