@@ -12,8 +12,8 @@ gdb := "riscv64-unknown-elf-gdb"
 size := "rust-size"
 
 build:
-    @just -f "machine-app-qemu/justfile" build
-    @just -f "supervisor-app/justfile" build
+    @just -f "machine-firmware-qemu/justfile" build
+    @just -f "supervisor-kernel/justfile" build
     
 qemu: build
     @qemu-system-riscv64 \

@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "machine-app-qemu",
+    "machine-firmware-k210",
+    "machine-firmware-qemu",
     "machine-rustsbi",
-    "supervisor-app",
+    "supervisor-kernel",
 ]

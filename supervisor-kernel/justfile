@@ -1,13 +1,13 @@
 target := "riscv64imac-unknown-none-elf"
 mode := "debug"
 build-path := "../target/" + target + "/" + mode + "/"
-m-firmware-file := build-path + "machine-app-qemu"
-m-bin-file := build-path + "machine-firmware.bin"
+s-kernel-file := build-path + "supervisor-kernel"
+s-bin-file := build-path + "supervisor-kernel.bin"
 
 objcopy := "rust-objcopy --binary-architecture=riscv64"
 
-build: firmware
-    @{{objcopy}} {{m-firmware-file}} --strip-all -O binary {{m-bin-file}}
+build: kernel
+    @{{objcopy}} {{s-kernel-file}} --strip-all -O binary {{s-bin-file}}
 
-firmware:
+kernel:
     @cargo build --target={{target}}
