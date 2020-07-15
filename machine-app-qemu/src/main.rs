@@ -223,6 +223,7 @@ extern fn start_trap_rust(trap_frame: &mut TrapFrame) {
         // 把返回值送还给TrapFrame
         trap_frame.a0 = ans.error;
         trap_frame.a1 = ans.value;
+        mepc::write(mepc::read().wrapping_add(4))
     } else {
         loop {} // cannot handle this
     }
