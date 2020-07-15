@@ -76,8 +76,10 @@ struct Stdout;
 
 impl fmt::Write for Stdout {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        for byte in s.as_bytes() {
-            legacy_stdio_putchar(*byte);
+        if let Some(stdio) = LEGACY_STDIO.lock().as_mut() {
+            for byte in s.as_bytes() {
+                stdio.putchar(*byte)
+            }
         }
         Ok(())
     }

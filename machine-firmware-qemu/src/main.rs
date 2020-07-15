@@ -15,7 +15,7 @@ use machine_rustsbi::legacy_stdio::init_legacy_stdio_embedded_hal;
 use machine_rustsbi::println;
 
 use riscv::register::{
-    mepc, mtvec::{self, TrapMode}, mstatus::{self, MPP}, 
+    mhartid, mepc, mtvec::{self, TrapMode}, mstatus::{self, MPP}, 
     mcause::{self, Trap, Exception}, mtval
 };
 
@@ -37,13 +37,14 @@ fn oom(_layout: Layout) -> ! {
 #[naked]
 fn main() -> ! {
     unsafe { llvm_asm!("
-        la sp, _stack_start
-
         csrr a2, mhartid
-        lui t0, %hi(_hart_stack_size)
-        add t0, t0, %lo(_hart_stack_size)
+        lui t0, %hi(_max_hart_id)
+        add t0, t0, %lo(_max_hart_id)
         bgtu a2, t0, _start_abort
 
+        la sp, _stack_start
+        lui t0, %hi(_hart_stack_size)
+        add t0, t0, %lo(_hart_stack_size)
     .ifdef __riscv_mul
         mul t0, a2, t0
     .else
@@ -66,18 +67,27 @@ fn main() -> ! {
     _start_success:
         
     ") };
+    
+    if _mp_hook() { 
+        // init
+    }
+
+    /* setup trap */
+
     extern {
         fn _start_trap();
     }
     unsafe { 
         mtvec::write(_start_trap as usize, TrapMode::Direct);
     }
+
+    /* main function start */
+
     extern { 
         static mut _sheap: u8;
         static _heap_size: u8;
     }
-    let mhartid = riscv::register::mhartid::read();
-    if mhartid == 0 {
+    if mhartid::read() == 0 {
         let sheap = unsafe { &mut _sheap } as *mut _ as usize;
         let heap_size = unsafe { &_heap_size } as *const u8 as usize;
         unsafe {
@@ -100,7 +110,8 @@ r#".______       __    __      _______.___________.  _______..______   __
 | _| `._____| \______/ |_______/       |__|  |_______/    |______/ |__|
 "#);
         println!("[rustsbi] Kernel entry: 0x80200000");
-    }// else wait for software interrupt
+    }
+
     extern {
         fn _s_mode_start();
     }
@@ -193,6 +204,18 @@ _enter_s_mode:
     csrrw   sp, mscratch, sp
     mret
 ");
+
+
+#[doc(hidden)]
+#[export_name = "_mp_hook"]
+pub extern "Rust" fn _mp_hook() -> bool {
+    match mhartid::read() {
+        0 => true,
+        _ => loop {
+            unsafe { riscv::asm::wfi() }
+        }, 
+    }
+}
 
 #[allow(unused)]
 struct TrapFrame {

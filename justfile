@@ -1,7 +1,7 @@
 target := "riscv64imac-unknown-none-elf"
 mode := "debug"
 build-path := "target/" + target + "/" + mode + "/"
-m-firmware-file := build-path + "machine-app-qemu"
+m-firmware-file := build-path + "machine-firmware-qemu"
 m-bin-file := build-path + "machine-firmware.bin"
 s-kernel-file := build-path + "supervisor-app"
 s-bin-file := build-path + "supervisor-kernel.bin"
@@ -21,7 +21,8 @@ qemu: build
             -nographic \
             -bios none \
             -device loader,file={{m-bin-file}},addr=0x80000000 \
-            -device loader,file={{s-bin-file}},addr=0x80200000
+            -device loader,file={{s-bin-file}},addr=0x80200000 \
+            -smp threads=4
 
 run: build qemu
 
@@ -38,6 +39,7 @@ debug: build
             -bios none \
             -device loader,file={{m-bin-file}},addr=0x80000000 \
             -device loader,file={{s-bin-file}},addr=0x80200000 \
+            -smp threads=4 \
             -gdb tcp::1234 -S
             
 gdb: 
