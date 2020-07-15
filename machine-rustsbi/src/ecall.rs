@@ -23,7 +23,7 @@ const LEGACY_CONSOLE_GETCHAR: usize = 0x02;
 pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> SbiRet {
     match extension {
         EXTENSION_BASE => base::handle_ecall_base(function, param[0]),
-        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(function),
+        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]),
         LEGACY_CONSOLE_GETCHAR => legacy::console_getchar(),
         _ => todo!(),
     }

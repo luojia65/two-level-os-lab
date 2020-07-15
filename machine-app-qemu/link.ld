@@ -1,10 +1,12 @@
 MEMORY {
     /* 存储单元的物理地址 */
-    SRAM : ORIGIN = 0x80000000, LENGTH = 6M
+    SRAM : ORIGIN = 0x80000000, LENGTH = 2M
 }
 
 PROVIDE(_stext = 0x80000000);
 PROVIDE(_heap_size = 20K);
+PROVIDE(_hart_stack_size = 2K);
+PROVIDE(_max_hart_id = 0); /* todo */
 
 REGION_ALIAS("REGION_TEXT", SRAM);
 REGION_ALIAS("REGION_RODATA", SRAM);
