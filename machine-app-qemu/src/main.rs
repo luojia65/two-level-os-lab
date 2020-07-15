@@ -16,7 +16,7 @@ use machine_rustsbi::println;
 
 use riscv::register::{
     mepc, mtvec::{self, TrapMode}, mstatus::{self, MPP}, 
-    mcause::{self, Trap, Exception}
+    mcause::{self, Trap, Exception}, mtval
 };
 
 #[global_allocator]
@@ -86,7 +86,8 @@ fn main() -> ! {
     
         let serial = hal::Ns16550a::new(0x10000000, 0, 11_059_200, 115200);
     
-        unsafe { init_legacy_stdio_embedded_hal(serial); }
+        // use through macro
+        init_legacy_stdio_embedded_hal(serial);
 
         println!("[rustsbi] Version 0.1.0");
         
@@ -223,8 +224,12 @@ extern fn start_trap_rust(trap_frame: &mut TrapFrame) {
         // 把返回值送还给TrapFrame
         trap_frame.a0 = ans.error;
         trap_frame.a1 = ans.value;
-        mepc::write(mepc::read().wrapping_add(4))
-    } else {
-        loop {} // cannot handle this
+        // 跳过ecall指令
+        mepc::write(mepc::read().wrapping_add(4));
+        return;
     }
+    println!(
+        "Unhandled exception! mcause: {:?}, mepc: {:?}, mtval: {:?}", 
+        cause, mepc::read(), mtval::read()
+    );
 }
