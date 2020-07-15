@@ -23,7 +23,7 @@ impl<T> EmbeddedHalSerial<T> {
     }
 }
 
-impl<'a, T: Send> LegacyStdio for EmbeddedHalSerial<&'a mut T>
+impl<T: Send> LegacyStdio for EmbeddedHalSerial<T>
 where
     T: Read<u8> + Write<u8>,
 {
@@ -50,9 +50,9 @@ lazy_static::lazy_static! {
 }
 
 #[doc(hidden)] // use through a macro
-pub unsafe fn init_legacy_stdio_embedded_hal<T: Read<u8> + Write<u8> + Send + 'static>(mut serial: T) {
+pub unsafe fn init_legacy_stdio_embedded_hal<T: Read<u8> + Write<u8> + Send + 'static>(serial: T) {
     // serial is forgotten
-    let serial = EmbeddedHalSerial::new(&mut *(&mut serial as *mut _));
+    let serial = EmbeddedHalSerial::new(serial);
     *LEGACY_STDIO.lock() = Some(Box::new(serial));
 }
 
