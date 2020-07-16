@@ -16,7 +16,7 @@ use machine_rustsbi::println;
 
 use riscv::register::{
     mhartid, mepc, mtvec::{self, TrapMode}, mstatus::{self, MPP}, 
-    mcause::{self, Trap, Exception}, mtval
+    mcause::{self, Trap, Exception}, mtval, mie, mip
 };
 
 #[global_allocator]
@@ -30,6 +30,25 @@ fn panic(_info: &PanicInfo) -> ! {
 #[alloc_error_handler]
 fn oom(_layout: Layout) -> ! {
     loop {}
+}
+
+// #[export_name = "_mp_hook"]
+pub extern "C" fn _mp_hook() -> bool {
+    if mhartid::read() == 0 {
+        true
+    } else {
+        unsafe {
+            mie::set_ssoft();
+            loop {
+                riscv::asm::wfi();
+                if mip::read().ssoft() {
+                    break;
+                }
+            }
+            mie::clear_ssoft();
+        }
+        false
+    }
 }
 
 #[export_name = "_start"]
@@ -110,6 +129,9 @@ r#".______       __    __      _______.___________.  _______..______   __
 | _| `._____| \______/ |_______/       |__|  |_______/    |______/ |__|
 "#);
         println!("[rustsbi] Kernel entry: 0x80200000");
+        
+        // send ipi to other harts
+        
     }
 
     extern {
@@ -205,17 +227,16 @@ _enter_s_mode:
     mret
 ");
 
-
-#[doc(hidden)]
-#[export_name = "_mp_hook"]
-pub extern "Rust" fn _mp_hook() -> bool {
-    match mhartid::read() {
-        0 => true,
-        _ => loop {
-            unsafe { riscv::asm::wfi() }
-        }, 
-    }
-}
+// #[doc(hidden)]
+// #[export_name = "_mp_hook"]
+// pub extern "Rust" fn _mp_hook() -> bool {
+//     match mhartid::read() {
+//         0 => true,
+//         _ => loop {
+//             unsafe { riscv::asm::wfi() }
+//         }, 
+//     }
+// }
 
 #[allow(unused)]
 struct TrapFrame {
