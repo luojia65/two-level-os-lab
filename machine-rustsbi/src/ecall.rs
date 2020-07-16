@@ -2,8 +2,8 @@
 // 你应该在riscv-rt或其它中断处理函数里，调用这个模块的内容
 
 mod base;
-mod legacy;
 mod ipi;
+mod legacy;
 mod timer;
 
 const EXTENSION_BASE: usize = 0x10;
@@ -58,12 +58,21 @@ const SBI_ERR_NOT_SUPPORTED: usize = usize::from_ne_bytes(isize::to_ne_bytes(-2)
 
 impl SbiRet {
     pub(crate) fn ok(value: usize) -> SbiRet {
-        SbiRet { error: SBI_SUCCESS, value }
+        SbiRet {
+            error: SBI_SUCCESS,
+            value,
+        }
     }
     pub(crate) fn not_supported() -> SbiRet {
-        SbiRet { error: SBI_ERR_NOT_SUPPORTED, value: 0 }
+        SbiRet {
+            error: SBI_ERR_NOT_SUPPORTED,
+            value: 0,
+        }
     }
     pub(crate) fn chain_value(self, value: usize) -> SbiRet {
-        SbiRet { error: self.error, value }
+        SbiRet {
+            error: self.error,
+            value,
+        }
     }
 }

@@ -45,7 +45,7 @@ use alloc::boxed::Box;
 use spin::Mutex;
 
 lazy_static::lazy_static! {
-    static ref LEGACY_STDIO: Mutex<Option<Box<dyn LegacyStdio>>> = 
+    static ref LEGACY_STDIO: Mutex<Option<Box<dyn LegacyStdio>>> =
         Mutex::new(None);
 }
 

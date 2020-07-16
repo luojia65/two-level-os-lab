@@ -14,3 +14,5 @@ const IMPL_ID_RUSTSBI: usize = 4;
 const RUSTSBI_VERSION: usize = 1; // todo: read from env!("CARGO_PKG_VERSION")
 
 pub use ecall::handle_ecall as ecall;
+
+pub const LOGO: &'static str = include_str!("logo.txt");

@@ -7,16 +7,19 @@
 
 mod hal;
 
-use linked_list_allocator::LockedHeap;
-use core::panic::PanicInfo;
 use core::alloc::Layout;
+use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
 
 use machine_rustsbi::legacy_stdio::init_legacy_stdio_embedded_hal;
 use machine_rustsbi::println;
 
 use riscv::register::{
-    mhartid, mepc, mtvec::{self, TrapMode}, mstatus::{self, MPP}, 
-    mcause::{self, Trap, Exception}, mtval, mie, mip
+    mcause::{self, Exception, Trap},
+    mepc, mhartid, mie, mip,
+    mstatus::{self, MPP},
+    mtval,
+    mtvec::{self, TrapMode},
 };
 
 #[global_allocator]
@@ -55,7 +58,9 @@ pub extern "C" fn _mp_hook() -> bool {
 #[link_section = ".text.entry"] // this is stable
 #[naked]
 fn main() -> ! {
-    unsafe { llvm_asm!("
+    unsafe {
+        llvm_asm!(
+            "
         csrr a2, mhartid
         lui t0, %hi(_max_hart_id)
         add t0, t0, %lo(_max_hart_id)
@@ -85,24 +90,26 @@ fn main() -> ! {
         j _start_abort
     _start_success:
         
-    ") };
-    
-    if _mp_hook() { 
+    "
+        )
+    };
+
+    if _mp_hook() {
         // init
     }
 
     /* setup trap */
 
-    extern {
+    extern "C" {
         fn _start_trap();
     }
-    unsafe { 
+    unsafe {
         mtvec::write(_start_trap as usize, TrapMode::Direct);
     }
 
     /* main function start */
 
-    extern { 
+    extern "C" {
         static mut _sheap: u8;
         static _heap_size: u8;
     }
@@ -112,35 +119,30 @@ fn main() -> ! {
         unsafe {
             ALLOCATOR.lock().init(sheap, heap_size);
         }
-    
+
         // 其实这些参数不用提供，直接通过pac库生成
         let serial = hal::Ns16550a::new(0x10000000, 0, 11_059_200, 115200);
-    
+
         // use through macro
         init_legacy_stdio_embedded_hal(serial);
 
         println!("[rustsbi] Version 0.1.0");
-        
-        println!(
-r#".______       __    __      _______.___________.  _______..______   __
-|   _  \     |  |  |  |    /       |           | /       ||   _  \ |  |
-|  |_)  |    |  |  |  |   |   (----`---|  |----`|   (----`|  |_)  ||  |
-|      /     |  |  |  |    \   \       |  |      \   \    |   _  < |  |
-|  |\  \----.|  `--'  |.----)   |      |  |  .----)   |   |  |_)  ||  |
-| _| `._____| \______/ |_______/       |__|  |_______/    |______/ |__|
-"#);
+
+        println!("{}", machine_rustsbi::LOGO);
         println!("[rustsbi] Kernel entry: 0x80200000");
     }
     println!("[rustsbi] starting hart {}", mhartid::read());
 
-    extern {
+    extern "C" {
         fn _s_mode_start();
     }
     unsafe {
         mepc::write(_s_mode_start as usize);
         mstatus::set_mpp(MPP::Supervisor);
     }
-    unsafe { llvm_asm!("
+    unsafe {
+        llvm_asm!(
+            "
         csrr    a0, mhartid
         li      a1, 0x2333333366666666 /* todo */
 
@@ -156,12 +158,15 @@ r#".______       __    __      _______.___________.  _______..______   __
     1:
         .dword 0x80200000
     .option pop
-    ") };
+    "
+        )
+    };
 
     loop {}
 }
 
-global_asm!("
+global_asm!(
+    "
     .equ REGBYTES, 8
     .macro STORE reg, offset
         sd  \\reg, \\offset*REGBYTES(sp)
@@ -224,7 +229,8 @@ _start_trap:
 _enter_s_mode:
     csrrw   sp, mscratch, sp
     mret
-");
+"
+);
 
 // #[doc(hidden)]
 // #[export_name = "_mp_hook"]
@@ -233,7 +239,7 @@ _enter_s_mode:
 //         0 => true,
 //         _ => loop {
 //             unsafe { riscv::asm::wfi() }
-//         }, 
+//         },
 //     }
 // }
 
@@ -258,7 +264,7 @@ struct TrapFrame {
 }
 
 #[export_name = "_start_trap_rust"]
-extern fn start_trap_rust(trap_frame: &mut TrapFrame) {
+extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
     let cause = mcause::read().cause();
     if cause == Trap::Exception(Exception::SupervisorEnvCall) {
         let params = [trap_frame.a0, trap_frame.a1, trap_frame.a2, trap_frame.a3];
@@ -272,7 +278,9 @@ extern fn start_trap_rust(trap_frame: &mut TrapFrame) {
         return;
     }
     println!(
-        "Unhandled exception! mcause: {:?}, mepc: {:?}, mtval: {:?}", 
-        cause, mepc::read(), mtval::read()
+        "Unhandled exception! mcause: {:?}, mepc: {:?}, mtval: {:?}",
+        cause,
+        mepc::read(),
+        mtval::read()
     );
 }

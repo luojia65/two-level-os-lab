@@ -1,6 +1,6 @@
-use embedded_hal::serial::{Read, Write};
 use core::convert::Infallible;
 use core::ptr::{read_volatile, write_volatile};
+use embedded_hal::serial::{Read, Write};
 
 pub struct Ns16550a {
     base: usize,
@@ -14,11 +14,11 @@ impl Ns16550a {
             write_volatile((base + (offsets::LCR << shift)) as *mut u8, 0x80); // DLAB
 
             let latch = clk / (16 * baud);
+            write_volatile((base + (offsets::DLL << shift)) as *mut u8, latch as u8);
             write_volatile(
-                (base + (offsets::DLL << shift)) as *mut u8,
-                latch as u8
+                (base + (offsets::DLH << shift)) as *mut u8,
+                (latch >> 8) as u8,
             );
-            write_volatile((base + (offsets::DLH << shift)) as *mut u8, (latch >> 8) as u8);
 
             write_volatile((base + (offsets::LCR << shift)) as *mut u8, 3); // WLEN8 & !DLAB
 
@@ -38,13 +38,12 @@ impl Read<u8> for Ns16550a {
     type Error = Infallible;
 
     fn try_read(&mut self) -> nb::Result<u8, Self::Error> {
-        let pending = unsafe { read_volatile(
-            (self.base + (offsets::LSR << self.shift)) as *const u8
-        ) } & masks::DR;
+        let pending =
+            unsafe { read_volatile((self.base + (offsets::LSR << self.shift)) as *const u8) }
+                & masks::DR;
         if pending != 0 {
-            let word = unsafe { read_volatile(
-                (self.base + (offsets::RBR << self.shift)) as *const u8
-            ) };
+            let word =
+                unsafe { read_volatile((self.base + (offsets::RBR << self.shift)) as *const u8) };
             Ok(word)
         } else {
             Err(nb::Error::WouldBlock)
@@ -57,16 +56,14 @@ impl Write<u8> for Ns16550a {
 
     fn try_write(&mut self, word: u8) -> nb::Result<(), Self::Error> {
         // 写，但是不刷新
-        unsafe { write_volatile(
-            (self.base + (offsets::THR << self.shift)) as *mut u8, word
-        )};
+        unsafe { write_volatile((self.base + (offsets::THR << self.shift)) as *mut u8, word) };
         Ok(())
     }
 
     fn try_flush(&mut self) -> nb::Result<(), Self::Error> {
-        let pending = unsafe { read_volatile(
-            (self.base + (offsets::LSR << self.shift)) as *const u8
-        ) } & masks::THRE;
+        let pending =
+            unsafe { read_volatile((self.base + (offsets::LSR << self.shift)) as *const u8) }
+                & masks::THRE;
         if pending != 0 {
             // 发送已经结束了
             Ok(())
