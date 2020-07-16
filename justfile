@@ -6,6 +6,8 @@ m-bin-file := build-path + "machine-firmware.bin"
 s-kernel-file := build-path + "supervisor-app"
 s-bin-file := build-path + "supervisor-kernel.bin"
 
+threads := "8"
+
 objdump := "riscv64-unknown-elf-objdump"
 objcopy := "rust-objcopy --binary-architecture=riscv64"
 gdb := "riscv64-unknown-elf-gdb"
@@ -22,7 +24,7 @@ qemu: build
             -bios none \
             -device loader,file={{m-bin-file}},addr=0x80000000 \
             -device loader,file={{s-bin-file}},addr=0x80200000 \
-            -smp threads=4
+            -smp threads={{threads}}
 
 run: build qemu
 
@@ -39,7 +41,7 @@ debug: build
             -bios none \
             -device loader,file={{m-bin-file}},addr=0x80000000 \
             -device loader,file={{s-bin-file}},addr=0x80200000 \
-            -smp threads=4 \
+            -smp threads={{threads}} \
             -gdb tcp::1234 -S
             
 gdb: 

@@ -31,9 +31,9 @@ pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> Sbi
         EXTENSION_BASE => base::handle_ecall_base(function, param[0]),
         EXTENSION_TIMER => timer::handle_ecall_timer(function, param[0]),
         EXTENSION_IPI => ipi::handle_ecall_ipi(function, param[0], param[1]),
-        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]),
-        LEGACY_CONSOLE_GETCHAR => legacy::console_getchar(),
-        LEGACY_SEND_IPI => legacy::send_ipi(param[0]),
+        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]).chain_value(param[0]),
+        LEGACY_CONSOLE_GETCHAR => legacy::console_getchar().chain_value(param[0]),
+        LEGACY_SEND_IPI => legacy::send_ipi(param[0]).chain_value(param[0]),
         _ => SbiRet::not_supported(),
     }
 }
@@ -62,5 +62,8 @@ impl SbiRet {
     }
     pub(crate) fn not_supported() -> SbiRet {
         SbiRet { error: SBI_ERR_NOT_SUPPORTED, value: 0 }
+    }
+    pub(crate) fn chain_value(self, value: usize) -> SbiRet {
+        SbiRet { error: self.error, value }
     }
 }
