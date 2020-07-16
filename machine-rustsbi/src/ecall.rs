@@ -3,8 +3,14 @@
 
 mod base;
 mod legacy;
+mod ipi;
+mod timer;
 
 const EXTENSION_BASE: usize = 0x10;
+const EXTENSION_TIMER: usize = 0x54494D45;
+const EXTENSION_IPI: usize = 0x735049;
+// const EXTENSION_RFENCE: usize = 0x52464E43;
+// const EXTENSION_HSM: usize = 0x48534D;
 
 // const LEGACY_SET_TIMER: usize = 0x0;
 const LEGACY_CONSOLE_PUTCHAR: usize = 0x01;
@@ -23,6 +29,8 @@ const LEGACY_CONSOLE_GETCHAR: usize = 0x02;
 pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> SbiRet {
     match extension {
         EXTENSION_BASE => base::handle_ecall_base(function, param[0]),
+        EXTENSION_TIMER => timer::handle_ecall_timer(function, param[0]),
+        EXTENSION_IPI => ipi::handle_ecall_ipi(function, param[0], param[1]),
         LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]),
         LEGACY_CONSOLE_GETCHAR => legacy::console_getchar(),
         _ => todo!(),

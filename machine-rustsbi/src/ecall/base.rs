@@ -11,6 +11,7 @@ const FUNCTION_BASE_GET_MVENDORID: usize = 0x4;
 const FUNCTION_BASE_GET_MARCHID: usize = 0x5;
 const FUNCTION_BASE_GET_MIMPID: usize = 0x6;
 
+#[inline]
 pub fn handle_ecall_base(function: usize, param0: usize) -> SbiRet {
     match function {
         FUNCTION_BASE_GET_SPEC_VERSION => get_spec_version(),
