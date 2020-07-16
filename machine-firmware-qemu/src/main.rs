@@ -179,10 +179,10 @@ global_asm!("
     .p2align 2
 _start_trap:
     csrrw   sp, mscratch, sp
-    bnez    sp, _not_from_m_boot
+    bnez    sp, 1f
+    /* from M level, load sp */
     csrrw   sp, mscratch, zero
-_not_from_m_boot:
-
+1:
     addi    sp, sp, -16 * REGBYTES
 
     STORE   ra, 0
