@@ -33,7 +33,7 @@ pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> Sbi
         EXTENSION_IPI => ipi::handle_ecall_ipi(function, param[0], param[1]),
         LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]),
         LEGACY_CONSOLE_GETCHAR => legacy::console_getchar(),
-        _ => todo!(),
+        _ => SbiRet::not_supported(),
     }
 }
 
@@ -47,8 +47,19 @@ pub struct SbiRet {
     pub value: usize,
 }
 
+const SBI_SUCCESS: usize = 0;
+// const SBI_ERR_FAILED: usize = usize::from_ne_bytes(isize::to_ne_bytes(-1));
+const SBI_ERR_NOT_SUPPORTED: usize = usize::from_ne_bytes(isize::to_ne_bytes(-2));
+// const SBI_ERR_INVALID_PARAM: usize = usize::from_ne_bytes(isize::to_ne_bytes(-3));
+// const SBI_ERR_DENIED: usize = usize::from_ne_bytes(isize::to_ne_bytes(-4));
+// const SBI_ERR_INVALID_ADDRESS: usize = usize::from_ne_bytes(isize::to_ne_bytes(-5));
+// const SBI_ERR_ALREADY_AVAILABLE: usize = usize::from_ne_bytes(isize::to_ne_bytes(-6));
+
 impl SbiRet {
     pub(crate) fn ok(value: usize) -> SbiRet {
-        SbiRet { error: 0, value }
+        SbiRet { error: SBI_SUCCESS, value }
+    }
+    pub(crate) fn not_supported() -> SbiRet {
+        SbiRet { error: SBI_ERR_NOT_SUPPORTED, value: 0 }
     }
 }

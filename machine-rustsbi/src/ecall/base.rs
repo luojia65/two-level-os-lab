@@ -21,7 +21,7 @@ pub fn handle_ecall_base(function: usize, param0: usize) -> SbiRet {
         FUNCTION_BASE_GET_MVENDORID => get_mvendorid(),
         FUNCTION_BASE_GET_MARCHID => get_marchid(),
         FUNCTION_BASE_GET_MIMPID => get_mimpid(),
-        _ => unimplemented!(),
+        _ => SbiRet::not_supported(),
     }
 }
 

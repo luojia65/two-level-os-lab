@@ -6,7 +6,7 @@ const FUNCTION_TIMER_SET_TIMER: usize = 0x0;
 pub fn handle_ecall_timer(function: usize, param0: usize) -> SbiRet {
     match function {
         FUNCTION_TIMER_SET_TIMER => set_timer(param0),
-        _ => unimplemented!(),
+        _ => SbiRet::not_supported(),
     }
 }
 
