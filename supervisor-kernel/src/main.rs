@@ -10,6 +10,7 @@ const HEAP_SIZE: usize = 0x100_0000;
 static mut HEAP: [u8; HEAP_SIZE] = [0; HEAP_SIZE];
 
 use riscv_sbi::println;
+use riscv_sbi::base;
 
 #[cfg(target_pointer_width = "64")]
 riscv_sbi_rt::boot_page_sv39! {
@@ -26,5 +27,10 @@ fn main(hartid: usize, dtb_pa: usize) {
             .init(HEAP.as_ptr() as usize, HEAP_SIZE);
     }
     println!("[Kernel] hartid: {}, dtb_pa: 0x{:x}", hartid, dtb_pa);
-    println!("操作系统启动！")
+    println!("spec_version = {:?}", base::get_spec_version());
+    println!("impl_id      = {:?}", base::get_impl_id());
+    println!("impl_version = {:?}", base::get_impl_version());
+    println!("mvendorid    = {:?}", base::get_mvendorid());
+    println!("marchid      = {:?}", base::get_marchid());
+    println!("mimpid       = {:?}", base::get_mimpid());
 }

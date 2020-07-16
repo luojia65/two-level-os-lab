@@ -32,13 +32,13 @@ fn get_spec_version() -> SbiRet {
 
 #[inline]
 fn get_sbi_impl_id() -> SbiRet {
-    let sbi_impl_id = 0; // todo: 可配置
+    let sbi_impl_id = crate::IMPL_ID_RUSTSBI; // todo: 可配置
     SbiRet::ok(sbi_impl_id)
 }
 
 #[inline]
 fn get_sbi_impl_version() -> SbiRet {
-    let sbi_impl_version = 0; // todo: 可配置
+    let sbi_impl_version = crate::RUSTSBI_VERSION; // todo: 可配置
     SbiRet::ok(sbi_impl_version)
 }
 
