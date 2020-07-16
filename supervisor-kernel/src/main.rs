@@ -10,7 +10,7 @@ const HEAP_SIZE: usize = 0x100_0000;
 static mut HEAP: [u8; HEAP_SIZE] = [0; HEAP_SIZE];
 
 use riscv_sbi::println;
-use riscv_sbi::base;
+use riscv_sbi::{base, legacy};
 
 #[cfg(target_pointer_width = "64")]
 riscv_sbi_rt::boot_page_sv39! {
@@ -21,11 +21,6 @@ riscv_sbi_rt::boot_page_sv39! {
 
 #[riscv_sbi_rt::entry]
 fn main(hartid: usize, dtb_pa: usize) {
-    unsafe {
-        HEAP_ALLOCATOR
-            .lock()
-            .init(HEAP.as_ptr() as usize, HEAP_SIZE);
-    }
     println!("[Kernel] hartid: {}, dtb_pa: 0x{:x}", hartid, dtb_pa);
     println!("spec_version = {:?}", base::get_spec_version());
     println!("impl_id      = {:?}", base::get_impl_id());
@@ -33,4 +28,13 @@ fn main(hartid: usize, dtb_pa: usize) {
     println!("mvendorid    = {:?}", base::get_mvendorid());
     println!("marchid      = {:?}", base::get_marchid());
     println!("mimpid       = {:?}", base::get_mimpid());
+    if hartid == 0 {
+        unsafe {
+            HEAP_ALLOCATOR
+                .lock()
+                .init(HEAP.as_ptr() as usize, HEAP_SIZE);
+        }
+        legacy::send_ipi(0b1110);
+    }
+    loop {}
 }

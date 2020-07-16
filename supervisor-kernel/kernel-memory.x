@@ -8,7 +8,7 @@ PROVIDE(_stext = 0xffffffff80200000);
 /* Modify this to provide bigger stack for each hart */
 PROVIDE(_hart_stack_size = 128K);
 /* Modify this to set max hart number */
-PROVIDE(_max_hart_id = 1);
+PROVIDE(_max_hart_id = 3);
 /* Modify this to add frame section size */
 PROVIDE(_frame_size = 16384 * 4K);
 

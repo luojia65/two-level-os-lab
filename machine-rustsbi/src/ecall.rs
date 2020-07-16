@@ -16,7 +16,7 @@ const EXTENSION_IPI: usize = 0x735049;
 const LEGACY_CONSOLE_PUTCHAR: usize = 0x01;
 const LEGACY_CONSOLE_GETCHAR: usize = 0x02;
 // const LEGACY_CLEAR_IPI: usize = 0x03;
-// const LEGACY_SEND_IPI: usize = 0x04;
+const LEGACY_SEND_IPI: usize = 0x04;
 // const LEGACY_REMOTE_FENCE_I: usize = 0x05;
 // const LEGACY_REMOTE_SFENCE_VMA: usize = 0x06;
 // const LEGACY_REMOTE_SFENCE_VMA_ASID: usize = 0x07;
@@ -33,6 +33,7 @@ pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> Sbi
         EXTENSION_IPI => ipi::handle_ecall_ipi(function, param[0], param[1]),
         LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]),
         LEGACY_CONSOLE_GETCHAR => legacy::console_getchar(),
+        LEGACY_SEND_IPI => legacy::send_ipi(param[0]),
         _ => SbiRet::not_supported(),
     }
 }

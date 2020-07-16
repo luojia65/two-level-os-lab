@@ -38,14 +38,14 @@ pub extern "C" fn _mp_hook() -> bool {
         true
     } else {
         unsafe {
-            mie::set_ssoft();
+            mie::set_msoft();
             loop {
                 riscv::asm::wfi();
-                if mip::read().ssoft() {
+                if mip::read().msoft() {
                     break;
                 }
             }
-            mie::clear_ssoft();
+            mie::clear_msoft();
         }
         false
     }
@@ -130,10 +130,6 @@ r#".______       __    __      _______.___________.  _______..______   __
 | _| `._____| \______/ |_______/       |__|  |_______/    |______/ |__|
 "#);
         println!("[rustsbi] Kernel entry: 0x80200000");
-        
-        // send ipi to other harts
-        let mut clint = hal::Clint::new(0x2000000 as *mut u8, mhartid::read());
-        clint.send_soft(1);
     }
     println!("[rustsbi] starting hart {}", mhartid::read());
 
