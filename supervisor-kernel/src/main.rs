@@ -41,14 +41,14 @@ fn mp_hook(hartid: usize, dtb_pa: usize) -> bool {
 
 #[riscv_sbi_rt::entry]
 fn main(hartid: usize, dtb_pa: usize) {
-    println!("[Kernel] hartid: {}, dtb_pa: 0x{:x}", hartid, dtb_pa);
-    println!("spec_version = {:?}", base::get_spec_version());
-    println!("impl_id      = {:?}", base::get_impl_id());
-    println!("impl_version = {:?}", base::get_impl_version());
-    println!("mvendorid    = {:?}", base::get_mvendorid());
-    println!("marchid      = {:?}", base::get_marchid());
-    println!("mimpid       = {:?}", base::get_mimpid());
     if hartid == 0 {
+        println!("[Kernel] hartid: {}, dtb_pa: 0x{:x}", hartid, dtb_pa);
+        println!("spec_version = {:?}", base::get_spec_version());
+        println!("impl_id      = {:?}", base::get_impl_id());
+        println!("impl_version = {:?}", base::get_impl_version());
+        println!("mvendorid    = {:?}", base::get_mvendorid());
+        println!("marchid      = {:?}", base::get_marchid());
+        println!("mimpid       = {:?}", base::get_mimpid());
         unsafe {
             HEAP_ALLOCATOR
                 .lock()
@@ -59,5 +59,6 @@ fn main(hartid: usize, dtb_pa: usize) {
         println!("{:x?}", hart_mask);
         legacy::send_ipi(hart_mask);
     }
+    println!("[Kernal] Hart {} is running!", hartid);
     loop {}
 }
