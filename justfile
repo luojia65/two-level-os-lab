@@ -3,7 +3,7 @@ mode := "debug"
 build-path := "target/" + target + "/" + mode + "/"
 m-firmware-file := build-path + "machine-firmware-qemu"
 m-bin-file := build-path + "machine-firmware.bin"
-s-kernel-file := build-path + "supervisor-app"
+s-kernel-file := build-path + "supervisor-kernel"
 s-bin-file := build-path + "supervisor-kernel.bin"
 
 threads := "8"
@@ -41,6 +41,9 @@ asm: build
 
 size: build
     @{{size}} -A -x {{m-firmware-file}}
+
+size-kernel: build
+    @{{size}} -A -x {{s-kernel-file}}
 
 debug: build
     @qemu-system-riscv64 \
