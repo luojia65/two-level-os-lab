@@ -11,7 +11,6 @@ use core::alloc::Layout;
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
-use machine_rustsbi::legacy_stdio::init_legacy_stdio_embedded_hal;
 use machine_rustsbi::println;
 
 use riscv::register::{
@@ -61,27 +60,29 @@ fn main() -> ! {
     unsafe {
         llvm_asm!(
             "
-        csrr a2, mhartid
-        lui t0, %hi(_max_hart_id)
-        add t0, t0, %lo(_max_hart_id)
-        bgtu a2, t0, _start_abort
+        csrr    a2, mhartid
+        lui     t0, %hi(_max_hart_id)
+        add     t0, t0, %lo(_max_hart_id)
+        bgtu    a2, t0, _start_abort
 
-        la sp, _stack_start
-        lui t0, %hi(_hart_stack_size)
-        add t0, t0, %lo(_hart_stack_size)
+        la      sp, _stack_start
+        lui     t0, %hi(_hart_stack_size)
+        add     t0, t0, %lo(_hart_stack_size)
     .ifdef __riscv_mul
-        mul t0, a2, t0
+        mul     t0, a2, t0
     .else
-        beqz a2, 2f  // Jump if single-hart
-        mv t1, a2
-        mv t2, t0
+        beqz    a2, 2f  // Jump if single-hart
+        mv      t1, a2
+        mv      t2, t0
     1:
-        add t0, t0, t2
-        addi t1, t1, -1
-        bnez t1, 1b
+        add     t0, t0, t2
+        addi    t1, t1, -1
+        bnez    t1, 1b
     2:
     .endif
-        sub sp, sp, t0
+        sub     sp, sp, t0
+
+        csrw    mscratch, zero
 
         j _start_success
         
@@ -124,7 +125,12 @@ fn main() -> ! {
         let serial = hal::Ns16550a::new(0x10000000, 0, 11_059_200, 115200);
 
         // use through macro
+        use machine_rustsbi::legacy_stdio::init_legacy_stdio_embedded_hal;
         init_legacy_stdio_embedded_hal(serial);
+
+        let clint = hal::Clint::new(0x2000000 as *mut u8);
+        use machine_rustsbi::init_ipi;
+        init_ipi(clint);
 
         println!("[rustsbi] Version 0.1.0");
 
@@ -278,9 +284,10 @@ extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
         return;
     }
     println!(
-        "Unhandled exception! mcause: {:?}, mepc: {:?}, mtval: {:?}",
+        "Unhandled exception! mcause: {:?}, mepc: {:x?}, mtval: {:x?}",
         cause,
         mepc::read(),
         mtval::read()
     );
+    loop {}
 }

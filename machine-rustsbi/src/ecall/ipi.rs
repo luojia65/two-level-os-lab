@@ -15,7 +15,3 @@ fn send_ipi(_hart_mask: usize, _hart_mask_base: usize) -> SbiRet {
     // todo: send software interrupt to another hart
     SbiRet::ok(0)
 }
-
-// pub trait Ipi {
-//     fn send_ipi(&mut self, hart_mask: HartMask);
-// }

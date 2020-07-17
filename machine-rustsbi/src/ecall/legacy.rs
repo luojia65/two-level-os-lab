@@ -1,5 +1,7 @@
 use super::SbiRet;
 use crate::legacy_stdio::{legacy_stdio_getchar, legacy_stdio_putchar};
+use crate::hart_mask::HartMask;
+use crate::ipi::{send_ipi_many, max_hart_id};
 
 pub fn console_putchar(param0: usize) -> SbiRet {
     let ch = (param0 & 0xff) as u8;
@@ -12,27 +14,11 @@ pub fn console_getchar() -> SbiRet {
     SbiRet::ok(ch as usize)
 }
 
-pub fn send_ipi(hart_mask_ptr: usize) -> SbiRet {
-    // todo: wrap
-    let mut mask: usize;
-    unsafe { llvm_asm!("
-        li      t0, (1 << 17)
-        mv      t1, $1
-        csrrs   t0, mstatus, t0
-        lw      t1, 0(t1)
-        csrw    mstatus, t0
-        mv      $0, t1
-    "
-        :"=r"(mask) 
-        :"r"(hart_mask_ptr)
-        :"t0", "t1") 
+pub fn send_ipi(hart_mask_addr: usize) -> SbiRet {
+    // note(unsafe): if any load fault, should be handled by user or supervisor
+    let hart_mask = unsafe {
+        HartMask::from_addr(hart_mask_addr, max_hart_id())
     };
-    for i in 0..64 { 
-        if mask & (1 << i) != 0 {
-            unsafe { 
-                core::ptr::write_volatile((0x2000000 as *mut u32).offset(i), 1);
-            }
-        }
-    }
+    send_ipi_many(hart_mask);
     SbiRet::ok(0)
 }
