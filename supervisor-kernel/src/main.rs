@@ -34,7 +34,7 @@ fn main(hartid: usize, dtb_pa: usize) {
                 .lock()
                 .init(HEAP.as_ptr() as usize, HEAP_SIZE);
         }
-        legacy::send_ipi(0b1110);
+        legacy::send_ipi(0b11111110);
     }
     loop {}
 }

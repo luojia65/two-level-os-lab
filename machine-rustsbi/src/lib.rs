@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(llvm_asm)]
 
 extern crate alloc;
 
