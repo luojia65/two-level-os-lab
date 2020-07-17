@@ -1,6 +1,5 @@
 use core::mem::size_of;
 
-#[repr(C)]
 pub struct HartMask {
     bit_vector: *const usize,
     max_hart_id: usize,

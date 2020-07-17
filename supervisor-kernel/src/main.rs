@@ -9,8 +9,8 @@ static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 const HEAP_SIZE: usize = 0x100_0000;
 static mut HEAP: [u8; HEAP_SIZE] = [0; HEAP_SIZE];
 
-use riscv_sbi::println;
-use riscv_sbi::{base, legacy};
+use riscv_sbi::{base, legacy, HartMask, println};
+use riscv_sbi_rt::max_hart_id;
 
 #[cfg(target_pointer_width = "64")]
 riscv_sbi_rt::boot_page_sv39! {
@@ -34,7 +34,10 @@ fn main(hartid: usize, dtb_pa: usize) {
                 .lock()
                 .init(HEAP.as_ptr() as usize, HEAP_SIZE);
         }
-        legacy::send_ipi(0b11111110);
+        let mut hart_mask = HartMask::all(max_hart_id());
+        hart_mask.clear(0);
+        println!("{:x?}", hart_mask);
+        legacy::send_ipi(hart_mask);
     }
     loop {}
 }
