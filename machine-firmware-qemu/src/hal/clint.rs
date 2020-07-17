@@ -19,6 +19,13 @@ impl Clint {
         }
     }
 
+    pub fn get_mtime(&self) -> u64 {
+        unsafe {
+            let base = self.base as *mut u8;
+            core::ptr::read_volatile(base.offset(0xbff8) as *mut u64)
+        }
+    }
+
     pub fn setup(&mut self, hart_id: usize) {
         // Writes timecmp to no timer
         unsafe {
@@ -58,14 +65,17 @@ impl Clint {
     }
 }
 
-use machine_rustsbi::{HartMask, Ipi};
+use machine_rustsbi::{HartMask, Ipi, Timer};
 
 impl Ipi for Clint {
     fn max_hart_id(&self) -> usize {
-        extern "C" {
-            static _max_hart_id: u8;
-        }
-        unsafe { &_max_hart_id as *const _ as usize }
+        let ans: usize;
+        unsafe { llvm_asm!("
+            lui     t0, %hi(_max_hart_id)
+            add     t0, t0, %lo(_max_hart_id)
+            mv      $0, t0
+        ":"=r"(ans)::"t0") };
+        ans
     }
 
     fn send_ipi_many(&mut self, hart_mask: HartMask) {
@@ -74,5 +84,12 @@ impl Ipi for Clint {
                 self.send_soft(i);
             }
         }
+    }
+}
+
+impl Timer for Clint {
+    fn set_timer(&mut self, time_value: u64) {
+        let this_mhartid = riscv::register::mhartid::read();
+        self.set_timer(this_mhartid, time_value);
     }
 }

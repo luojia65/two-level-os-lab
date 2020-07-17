@@ -12,7 +12,7 @@ const EXTENSION_IPI: usize = 0x735049;
 // const EXTENSION_RFENCE: usize = 0x52464E43;
 // const EXTENSION_HSM: usize = 0x48534D;
 
-// const LEGACY_SET_TIMER: usize = 0x0;
+const LEGACY_SET_TIMER: usize = 0x0;
 const LEGACY_CONSOLE_PUTCHAR: usize = 0x01;
 const LEGACY_CONSOLE_GETCHAR: usize = 0x02;
 // const LEGACY_CLEAR_IPI: usize = 0x03;
@@ -31,9 +31,14 @@ pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> Sbi
         EXTENSION_BASE => base::handle_ecall_base(function, param[0]),
         EXTENSION_TIMER => timer::handle_ecall_timer(function, param[0]),
         EXTENSION_IPI => ipi::handle_ecall_ipi(function, param[0], param[1]),
-        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]).chain_value(param[0]),
-        LEGACY_CONSOLE_GETCHAR => legacy::console_getchar().chain_value(param[0]),
-        LEGACY_SEND_IPI => legacy::send_ipi(param[0]).chain_value(param[0]),
+        LEGACY_SET_TIMER => legacy::set_timer(param[0])
+            .legacy_void(param[0], param[1]),
+        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0])
+            .legacy_void(param[0], param[1]),
+        LEGACY_CONSOLE_GETCHAR => legacy::console_getchar()
+            .legacy_return(param[1]),
+        LEGACY_SEND_IPI => legacy::send_ipi(param[0])
+            .legacy_void(param[0], param[1]),
         _ => SbiRet::not_supported(),
     }
 }
@@ -69,10 +74,17 @@ impl SbiRet {
             value: 0,
         }
     }
-    pub(crate) fn chain_value(self, value: usize) -> SbiRet {
+    // only used for legacy where a0, a1 return value is not modified
+    pub(crate) fn legacy_void(self, a0: usize, a1: usize) -> SbiRet {
+        SbiRet {
+            error: a0,
+            value: a1,
+        }
+    }
+    pub(crate) fn legacy_return(self, a1: usize) -> SbiRet {
         SbiRet {
             error: self.error,
-            value,
+            value: a1,
         }
     }
 }

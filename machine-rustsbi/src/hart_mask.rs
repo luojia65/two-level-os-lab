@@ -31,11 +31,12 @@ fn split_index_usize(index: usize) -> (usize, usize) {
 #[inline]
 unsafe fn get_vaddr_usize(vaddr_ptr: *const usize) -> usize {
     let mut ans: usize;
+    // todo: 32 bit systems
     llvm_asm!("
         li      t0, (1 << 17)
         mv      t1, $1
         csrrs   t0, mstatus, t0
-        lw      t1, 0(t1)
+        ld      t1, 0(t1)
         csrw    mstatus, t0
         mv      $0, t1
     "

@@ -11,7 +11,11 @@ pub fn handle_ecall_timer(function: usize, param0: usize) -> SbiRet {
 }
 
 #[inline]
-fn set_timer(_time_value: usize) -> SbiRet {
-    // todo: set memory mapped control register mtimecmp
-    SbiRet::ok(0)
+fn set_timer(time_value: usize) -> SbiRet {
+    if crate::timer::set_timer(time_value as u64) { // todo!!!!
+        SbiRet::ok(0)
+    } else {
+        // should be probed with probe_extension
+        SbiRet::not_supported()
+    }
 }

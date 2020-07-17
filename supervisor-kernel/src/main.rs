@@ -9,7 +9,9 @@ static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 const HEAP_SIZE: usize = 0x100_0000;
 static mut HEAP: [u8; HEAP_SIZE] = [0; HEAP_SIZE];
 
-use riscv::register::{sie, sip};
+const INTERVAL: u64 = 10_000_000;
+
+use riscv::register::{sie, sip, time, sstatus};
 use riscv_sbi::{base, legacy, println, HartMask};
 use riscv_sbi_rt::max_hart_id;
 
@@ -21,7 +23,7 @@ riscv_sbi_rt::boot_page_sv39! {
 }
 
 #[export_name = "_mp_hook"]
-fn mp_hook(hartid: usize, dtb_pa: usize) -> bool {
+fn mp_hook(hartid: usize, _dtb_pa: usize) -> bool {
     if hartid == 0 {
         true
     } else {
@@ -58,6 +60,26 @@ fn main(hartid: usize, dtb_pa: usize) {
         hart_mask.clear(0);
         legacy::send_ipi(hart_mask);
     }
+    unsafe { 
+        sie::set_stimer();
+        sstatus::set_sie();
+    }
     println!("[Kernal] Hart {} is running!", hartid);
+    legacy::set_timer(time::read64().wrapping_add(INTERVAL));
     loop {}
+}
+
+use riscv_sbi_rt::TrapFrame;
+use riscv::register::scause::Scause;
+#[export_name = "SupervisorTimer"]
+unsafe extern "C" fn supervisor_timer(
+    context: &mut TrapFrame,
+    _scause: Scause,
+    _stval: usize,
+) -> *mut TrapFrame {
+    static mut TICKS: usize = 0;
+    legacy::set_timer(time::read64().wrapping_add(INTERVAL));
+    TICKS += 1;
+    println!("1 tick~");
+    context as *mut _
 }
