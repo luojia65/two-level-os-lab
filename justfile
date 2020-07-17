@@ -28,6 +28,14 @@ qemu: build
 
 run: build qemu
 
+run-opensbi: build
+    @qemu-system-riscv64 \
+            -machine virt \
+            -bios default \
+            -nographic \
+            -device loader,file={{s-bin-file}},addr=0x80200000 \
+            -smp threads={{threads}}
+
 asm: build
     @{{objdump}} -D {{m-firmware-file}} | less
 

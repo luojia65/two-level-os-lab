@@ -56,7 +56,6 @@ fn main(hartid: usize, dtb_pa: usize) {
         }
         let mut hart_mask = HartMask::all(max_hart_id());
         hart_mask.clear(0);
-        println!("{:x?}", hart_mask);
         legacy::send_ipi(hart_mask);
     }
     println!("[Kernal] Hart {} is running!", hartid);
