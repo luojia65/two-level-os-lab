@@ -28,7 +28,7 @@ pub(crate) fn send_ipi_many(hart_mask: HartMask) {
 pub(crate) fn max_hart_id() -> usize {
     loop {
         if let Some(ipi) = LEGACY_STDIO.lock().as_ref() {
-            return ipi.max_hart_id()
+            return ipi.max_hart_id();
         }
     }
 }

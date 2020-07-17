@@ -8,15 +8,16 @@ pub struct HartMask {
 impl HartMask {
     // note(unsafe): must ensure all usize values in the bit vector is accessible
     pub unsafe fn from_addr(vaddr: usize, max_hart_id: usize) -> HartMask {
-        HartMask { bit_vector: vaddr as *const usize, max_hart_id }
+        HartMask {
+            bit_vector: vaddr as *const usize,
+            max_hart_id,
+        }
     }
 
     pub fn has_bit(&self, hart_id: usize) -> bool {
         assert!(hart_id <= self.max_hart_id);
         let (i, j) = split_index_usize(hart_id);
-        let cur_vector = unsafe { 
-            get_vaddr_usize(self.bit_vector.offset(i as isize)) 
-        };
+        let cur_vector = unsafe { get_vaddr_usize(self.bit_vector.offset(i as isize)) };
         cur_vector & (1 << j) != 0
     }
 }

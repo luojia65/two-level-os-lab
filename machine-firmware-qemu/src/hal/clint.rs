@@ -6,7 +6,9 @@ pub struct Clint {
 
 impl Clint {
     pub fn new(base: *mut u8) -> Clint {
-        Clint { base: base as usize }
+        Clint {
+            base: base as usize,
+        }
     }
 
     pub fn setup_leader(&mut self) {
@@ -56,7 +58,7 @@ impl Clint {
     }
 }
 
-use machine_rustsbi::{Ipi, HartMask};   
+use machine_rustsbi::{HartMask, Ipi};
 
 impl Ipi for Clint {
     fn max_hart_id(&self) -> usize {

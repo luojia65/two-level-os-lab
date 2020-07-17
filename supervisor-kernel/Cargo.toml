@@ -10,3 +10,4 @@ edition = "2018"
 riscv-sbi-rt = { git = "https://github.com/rcore-os/riscv-sbi-rt" }
 riscv-sbi = { git = "https://github.com/rcore-os/riscv-sbi" }
 linked_list_allocator = "0.8"
+riscv = "0.6"

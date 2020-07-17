@@ -1,7 +1,7 @@
 use super::SbiRet;
-use crate::legacy_stdio::{legacy_stdio_getchar, legacy_stdio_putchar};
 use crate::hart_mask::HartMask;
-use crate::ipi::{send_ipi_many, max_hart_id};
+use crate::ipi::{max_hart_id, send_ipi_many};
+use crate::legacy_stdio::{legacy_stdio_getchar, legacy_stdio_putchar};
 
 pub fn console_putchar(param0: usize) -> SbiRet {
     let ch = (param0 & 0xff) as u8;
@@ -16,9 +16,7 @@ pub fn console_getchar() -> SbiRet {
 
 pub fn send_ipi(hart_mask_addr: usize) -> SbiRet {
     // note(unsafe): if any load fault, should be handled by user or supervisor
-    let hart_mask = unsafe {
-        HartMask::from_addr(hart_mask_addr, max_hart_id())
-    };
+    let hart_mask = unsafe { HartMask::from_addr(hart_mask_addr, max_hart_id()) };
     send_ipi_many(hart_mask);
     SbiRet::ok(0)
 }

@@ -14,8 +14,8 @@ use linked_list_allocator::LockedHeap;
 use machine_rustsbi::println;
 
 use riscv::register::{
-    mcause::{self, Exception, Trap},
-    mepc, mhartid, mie, mip,
+    mcause::{self, Exception, Interrupt, Trap},
+    mepc, mhartid, mideleg, mie, mip,
     mstatus::{self, MPP},
     mtval,
     mtvec::{self, TrapMode},
@@ -36,21 +36,7 @@ fn oom(_layout: Layout) -> ! {
 
 // #[export_name = "_mp_hook"]
 pub extern "C" fn _mp_hook() -> bool {
-    if mhartid::read() == 0 {
-        true
-    } else {
-        unsafe {
-            mie::set_msoft();
-            loop {
-                riscv::asm::wfi();
-                if mip::read().msoft() {
-                    break;
-                }
-            }
-            mie::clear_msoft();
-        }
-        false
-    }
+    mhartid::read() == 0
 }
 
 #[export_name = "_start"]
@@ -137,7 +123,15 @@ fn main() -> ! {
         println!("{}", machine_rustsbi::LOGO);
         println!("[rustsbi] Kernel entry: 0x80200000");
     }
-    println!("[rustsbi] starting hart {}", mhartid::read());
+
+    // 把S的中断全部委托给S层
+    unsafe {
+        mideleg::set_sext();
+        mideleg::set_stimer();
+        mideleg::set_ssoft();
+        mie::set_msoft();
+        mie::set_mext();
+    }
 
     extern "C" {
         fn _s_mode_start();
@@ -272,22 +266,29 @@ struct TrapFrame {
 #[export_name = "_start_trap_rust"]
 extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
     let cause = mcause::read().cause();
-    if cause == Trap::Exception(Exception::SupervisorEnvCall) {
-        let params = [trap_frame.a0, trap_frame.a1, trap_frame.a2, trap_frame.a3];
-        // 调用rust_sbi库的处理函数
-        let ans = machine_rustsbi::ecall(trap_frame.a7, trap_frame.a6, params);
-        // 把返回值送还给TrapFrame
-        trap_frame.a0 = ans.error;
-        trap_frame.a1 = ans.value;
-        // 跳过ecall指令
-        mepc::write(mepc::read().wrapping_add(4));
-        return;
+    match cause {
+        Trap::Exception(Exception::SupervisorEnvCall) => {
+            let params = [trap_frame.a0, trap_frame.a1, trap_frame.a2, trap_frame.a3];
+            // 调用rust_sbi库的处理函数
+            let ans = machine_rustsbi::ecall(trap_frame.a7, trap_frame.a6, params);
+            // 把返回值送还给TrapFrame
+            trap_frame.a0 = ans.error;
+            trap_frame.a1 = ans.value;
+            // 跳过ecall指令
+            mepc::write(mepc::read().wrapping_add(4));
+        }
+        Trap::Interrupt(Interrupt::MachineSoft) => {
+            // 返回给S层
+            unsafe {
+                mip::set_ssoft();
+                mie::clear_msoft();
+            }
+        }
+        cause => panic!(
+            "Unhandled exception! mcause: {:?}, mepc: {:x?}, mtval: {:x?}",
+            cause,
+            mepc::read(),
+            mtval::read()
+        ),
     }
-    println!(
-        "Unhandled exception! mcause: {:?}, mepc: {:x?}, mtval: {:x?}",
-        cause,
-        mepc::read(),
-        mtval::read()
-    );
-    loop {}
 }
