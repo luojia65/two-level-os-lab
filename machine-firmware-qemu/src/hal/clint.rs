@@ -11,33 +11,11 @@ impl Clint {
         }
     }
 
-    pub fn setup_leader(&mut self) {
-        // Setup mtime
-        unsafe {
-            let base = self.base as *mut u8;
-            core::ptr::write_volatile(base.add(0xbff8) as *mut u64, 0);
-        }
-    }
-
     pub fn get_mtime(&self) -> u64 {
         unsafe {
             let base = self.base as *mut u8;
             core::ptr::read_volatile(base.add(0xbff8) as *mut u64)
         }
-    }
-
-    pub fn setup(&mut self, hart_id: usize) {
-        // Writes timecmp to no timer
-        unsafe {
-            let base = self.base as *mut u8;
-            core::ptr::write_volatile(
-                (base.offset(0x4000) as *mut u64).add(hart_id),
-                core::u64::MAX >> 4, // Fix QEMU timer loop
-            );
-        }
-
-        // Clears all software interrupts for current HART
-        self.clear_soft(hart_id);
     }
 
     pub fn set_timer(&mut self, hart_id: usize, instant: u64) {
@@ -54,12 +32,12 @@ impl Clint {
         }
     }
 
-    pub fn clear_soft(&mut self, hart_id: usize) {
-        unsafe {
-            let base = self.base as *mut u8;
-            core::ptr::write_volatile((base as *mut u32).add(hart_id), 0);
-        }
-    }
+    // pub fn clear_soft(&mut self, hart_id: usize) {
+    //     unsafe {
+    //         let base = self.base as *mut u8;
+    //         core::ptr::write_volatile((base as *mut u32).add(hart_id), 0);
+    //     }
+    // }
 }
 
 use machine_rustsbi::{HartMask, Ipi, Timer};
