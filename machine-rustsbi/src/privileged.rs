@@ -19,7 +19,7 @@
 /// unsafe {
 ///     mepc::write(_s_mode_start as usize);
 ///     mstatus::set_mpp(MPP::Supervisor);
-///     enter_privileged(mhartid::read(), 0x2333333366666666);
+///     enter_privileged(mhartid::read(), dtb_pa);
 /// }
 /// ```
 #[inline]

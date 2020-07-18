@@ -41,6 +41,25 @@ where
     }
 }
 
+struct Fused<T, R>(T, R);
+
+// 和上面的原理差不多，就是分开了
+impl<T, R> LegacyStdio for Fused<T, R> 
+where 
+    T: Write<u8> + Send + 'static, 
+    R: Read<u8> + Send + 'static
+{
+
+    fn getchar(&mut self) -> u8 {
+        block!(self.1.try_read()).ok().unwrap()
+    }
+
+    fn putchar(&mut self, ch: u8) {
+        block!(self.0.try_write(ch)).ok();
+        block!(self.0.try_flush()).ok();
+    }
+}
+
 use alloc::boxed::Box;
 use spin::Mutex;
 
@@ -51,8 +70,17 @@ lazy_static::lazy_static! {
 
 #[doc(hidden)] // use through a macro
 pub fn init_legacy_stdio_embedded_hal<T: Read<u8> + Write<u8> + Send + 'static>(serial: T) {
-    // serial is forgotten
     let serial = EmbeddedHalSerial::new(serial);
+    *LEGACY_STDIO.lock() = Some(Box::new(serial));
+}
+
+#[doc(hidden)] // use through a macro
+pub fn init_legacy_stdio_embedded_hal_fuse<T, R>(tx: T, rx: R) 
+where 
+    T: Write<u8> + Send + 'static, 
+    R: Read<u8> + Send + 'static
+{
+    let serial = Fused(tx, rx);
     *LEGACY_STDIO.lock() = Some(Box::new(serial));
 }
 
