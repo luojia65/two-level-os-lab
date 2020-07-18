@@ -4,6 +4,7 @@ members = [
     "machine-firmware-qemu",
     "machine-rustsbi",
     "supervisor-kernel",
+    "riscv-rt",
 ]
 
 [patch.crates-io]

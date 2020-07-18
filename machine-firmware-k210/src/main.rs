@@ -16,9 +16,7 @@ fn oom(_layout: Layout) -> ! {
     loop {}
 }
 
-#[export_name = "_start"]
-#[link_section = ".text.entry"] // this is stable
-#[naked]
+#[riscv_rt::entry]
 fn main() -> ! {
     loop {}
 }
