@@ -39,15 +39,21 @@ const LEGACY_SEND_IPI: usize = 0x04;
 /// A typical usage:
 ///
 /// ```no_run
-/// fn exception(ctx: &mut TrapFrame) {
-///     // if mcause == Trap::Exception(Exception::SupervisorEnvCall) {
-///     let params = [ctx.a0, ctx.a1, ctx.a2, ctx.a3];
-///     let ans = rustsbi::ecall(ctx.a7, ctx.a6, params);
-///     ctx.a0 = ans.error;
-///     ctx.a1 = ans.value;
-///     // }
+/// #[exception]
+/// fn handle_exception(ctx: &mut TrapFrame) {
+///     if mcause::read().cause() == Trap::Exception(Exception::SupervisorEnvCall) {
+///         let params = [ctx.a0, ctx.a1, ctx.a2, ctx.a3];
+///         let ans = rustsbi::ecall(ctx.a7, ctx.a6, params);
+///         ctx.a0 = ans.error;
+///         ctx.a1 = ans.value;
+///         mepc::write(mepc::read().wrapping_add(4));
+///     }
+///     // other conditions..
 /// }
 /// ```
+///
+/// Do not forget to advance `mepc` by 4 after an ecall is handled.
+/// This skips the `ecall` instruction itself which is 4-byte long in all conditions.
 #[inline]
 pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> SbiRet {
     match extension {
