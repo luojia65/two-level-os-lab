@@ -10,7 +10,7 @@ const HEAP_SIZE: usize = 512 * 1024;
 
 const INTERVAL: u64 = 10_000_000;
 
-use riscv::register::{sie, sip, time, sstatus};
+use riscv::register::{sie, sip, sstatus, time};
 use riscv_sbi::{base, legacy, println, HartMask};
 use riscv_sbi_rt::{heap_start, max_hart_id};
 
@@ -51,15 +51,13 @@ fn main(hartid: usize, dtb_pa: usize) {
         println!("marchid      = {:?}", base::get_marchid());
         println!("mimpid       = {:?}", base::get_mimpid());
         unsafe {
-            HEAP_ALLOCATOR
-                .lock()
-                .init(heap_start() as usize, HEAP_SIZE);
+            HEAP_ALLOCATOR.lock().init(heap_start() as usize, HEAP_SIZE);
         }
         let mut hart_mask = HartMask::all(max_hart_id());
         hart_mask.clear(0);
         legacy::send_ipi(hart_mask);
     }
-    unsafe { 
+    unsafe {
         sie::set_stimer();
         sstatus::set_sie();
     }

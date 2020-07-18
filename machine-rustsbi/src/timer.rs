@@ -1,4 +1,3 @@
-
 pub trait Timer: Send {
     fn set_timer(&mut self, time_value: u64);
 }

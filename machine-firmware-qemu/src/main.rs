@@ -282,21 +282,21 @@ extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
             trap_frame.a1 = ans.value;
             // 跳过ecall指令
             mepc::write(mepc::read().wrapping_add(4));
-        },
+        }
         Trap::Interrupt(Interrupt::MachineSoft) => {
             // 机器软件中断返回给S层
             unsafe {
                 mip::set_ssoft();
                 mie::clear_msoft();
             }
-        },
+        }
         Trap::Interrupt(Interrupt::MachineTimer) => {
             // 机器时间中断返回给S层
             unsafe {
                 mip::set_stimer();
                 mie::clear_mtimer();
             }
-        },
+        }
         Trap::Exception(Exception::IllegalInstruction) => {
             #[inline]
             unsafe fn get_vaddr_u32(vaddr: usize) -> u32 {
@@ -316,9 +316,10 @@ extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
             }
             let vaddr = mepc::read();
             let ins = unsafe { get_vaddr_u32(vaddr) };
-            if ins & 0xFFFFF07F == 0xC0102073 { // rdtime
+            if ins & 0xFFFFF07F == 0xC0102073 {
+                // rdtime
                 let rd = ((ins >> 7) & 0b1_1111) as u8;
-                // todo: one instance only 
+                // todo: one instance only
                 let clint = hal::Clint::new(0x2000000 as *mut u8);
                 let time_usize = clint.get_mtime() as usize;
                 match rd {
@@ -337,13 +338,13 @@ extern "C" fn start_trap_rust(trap_frame: &mut TrapFrame) {
                     29 => trap_frame.t4 = time_usize,
                     30 => trap_frame.t5 = time_usize,
                     31 => trap_frame.t6 = time_usize,
-                    _ => panic!("invalid target")
+                    _ => panic!("invalid target"),
                 }
                 mepc::write(mepc::read().wrapping_add(4)); // 跳过指令
             } else {
                 panic!("invalid instruction, mepc: {:016x?}", mepc::read());
             }
-        },
+        }
         cause => panic!(
             "Unhandled exception! mcause: {:?}, mepc: {:016x?}, mtval: {:016x?}",
             cause,

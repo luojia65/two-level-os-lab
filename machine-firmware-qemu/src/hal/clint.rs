@@ -15,14 +15,14 @@ impl Clint {
         // Setup mtime
         unsafe {
             let base = self.base as *mut u8;
-            core::ptr::write_volatile(base.offset(0xbff8) as *mut u64, 0);
+            core::ptr::write_volatile(base.add(0xbff8) as *mut u64, 0);
         }
     }
 
     pub fn get_mtime(&self) -> u64 {
         unsafe {
             let base = self.base as *mut u8;
-            core::ptr::read_volatile(base.offset(0xbff8) as *mut u64)
+            core::ptr::read_volatile(base.add(0xbff8) as *mut u64)
         }
     }
 
@@ -31,7 +31,7 @@ impl Clint {
         unsafe {
             let base = self.base as *mut u8;
             core::ptr::write_volatile(
-                (base.offset(0x4000) as *mut u64).offset(hart_id as isize),
+                (base.offset(0x4000) as *mut u64).add(hart_id),
                 core::u64::MAX >> 4, // Fix QEMU timer loop
             );
         }
@@ -43,24 +43,21 @@ impl Clint {
     pub fn set_timer(&mut self, hart_id: usize, instant: u64) {
         unsafe {
             let base = self.base as *mut u8;
-            core::ptr::write_volatile(
-                (base.offset(0x4000) as *mut u64).offset(hart_id as isize),
-                instant,
-            );
+            core::ptr::write_volatile((base.offset(0x4000) as *mut u64).add(hart_id), instant);
         }
     }
 
     pub fn send_soft(&mut self, hart_id: usize) {
         unsafe {
             let base = self.base as *mut u8;
-            core::ptr::write_volatile((base as *mut u32).offset(hart_id as isize), 1);
+            core::ptr::write_volatile((base as *mut u32).add(hart_id), 1);
         }
     }
 
     pub fn clear_soft(&mut self, hart_id: usize) {
         unsafe {
             let base = self.base as *mut u8;
-            core::ptr::write_volatile((base as *mut u32).offset(hart_id as isize), 0);
+            core::ptr::write_volatile((base as *mut u32).add(hart_id), 0);
         }
     }
 }
@@ -70,11 +67,13 @@ use machine_rustsbi::{HartMask, Ipi, Timer};
 impl Ipi for Clint {
     fn max_hart_id(&self) -> usize {
         let ans: usize;
-        unsafe { llvm_asm!("
+        unsafe {
+            llvm_asm!("
             lui     t0, %hi(_max_hart_id)
             add     t0, t0, %lo(_max_hart_id)
             mv      $0, t0
-        ":"=r"(ans)::"t0") };
+        ":"=r"(ans)::"t0")
+        };
         ans
     }
 

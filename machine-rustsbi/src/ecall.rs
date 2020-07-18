@@ -29,16 +29,23 @@ const LEGACY_SEND_IPI: usize = 0x04;
 pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> SbiRet {
     match extension {
         EXTENSION_BASE => base::handle_ecall_base(function, param[0]),
-        EXTENSION_TIMER => timer::handle_ecall_timer(function, param[0]),
+        EXTENSION_TIMER => match () {
+            #[cfg(target_pointer_width = "64")]
+            () => timer::handle_ecall_timer_64(function, param[0]),
+            #[cfg(target_pointer_width = "32")]
+            () => timer::handle_ecall_timer_32(function, param[0], param[1]),
+        },
         EXTENSION_IPI => ipi::handle_ecall_ipi(function, param[0], param[1]),
-        LEGACY_SET_TIMER => legacy::set_timer(param[0])
-            .legacy_void(param[0], param[1]),
-        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0])
-            .legacy_void(param[0], param[1]),
-        LEGACY_CONSOLE_GETCHAR => legacy::console_getchar()
-            .legacy_return(param[1]),
-        LEGACY_SEND_IPI => legacy::send_ipi(param[0])
-            .legacy_void(param[0], param[1]),
+        LEGACY_SET_TIMER => match () {
+            #[cfg(target_pointer_width = "64")]
+            () => legacy::set_timer_64(param[0]),
+            #[cfg(target_pointer_width = "32")]
+            () => legacy::set_timer_32(param[0], param[1]),
+        }
+        .legacy_void(param[0], param[1]),
+        LEGACY_CONSOLE_PUTCHAR => legacy::console_putchar(param[0]).legacy_void(param[0], param[1]),
+        LEGACY_CONSOLE_GETCHAR => legacy::console_getchar().legacy_return(param[1]),
+        LEGACY_SEND_IPI => legacy::send_ipi(param[0]).legacy_void(param[0], param[1]),
         _ => SbiRet::not_supported(),
     }
 }
