@@ -33,21 +33,22 @@ fn get_spec_version() -> SbiRet {
 
 #[inline]
 fn get_sbi_impl_id() -> SbiRet {
-    let sbi_impl_id = crate::IMPL_ID_RUSTSBI; // todo: 可配置
+    let sbi_impl_id = crate::IMPL_ID_RUSTSBI;
     SbiRet::ok(sbi_impl_id)
 }
 
 #[inline]
 fn get_sbi_impl_version() -> SbiRet {
-    let sbi_impl_version = crate::RUSTSBI_VERSION; // todo: 可配置
+    let sbi_impl_version = crate::RUSTSBI_VERSION;
     SbiRet::ok(sbi_impl_version)
 }
 
 #[inline]
-fn probe_extension(_extension_id: usize) -> SbiRet {
-    // drop(extension_id); // todo use
-    let extension_return = 0; // todo: 可配置
-    SbiRet::ok(extension_return)
+fn probe_extension(extension_id: usize) -> SbiRet {
+    const NO_EXTENSION: usize = 0;
+    const HAS_EXTENSION: usize = 1;
+    let ans = crate::extension::probe_extension(extension_id);
+    SbiRet::ok(if ans { HAS_EXTENSION } else { NO_EXTENSION })
 }
 
 #[inline]

@@ -7,6 +7,7 @@ extern crate alloc;
 #[macro_use]
 pub mod legacy_stdio;
 mod ecall;
+mod extension;
 mod hart_mask;
 mod ipi;
 mod timer;

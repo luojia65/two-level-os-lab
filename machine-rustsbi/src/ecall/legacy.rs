@@ -8,7 +8,7 @@ use riscv::register::{mie, mip};
 pub fn console_putchar(param0: usize) -> SbiRet {
     let ch = (param0 & 0xff) as u8;
     legacy_stdio_putchar(ch);
-    SbiRet::ok(0) // todo
+    SbiRet::ok(0) // the return value 0 is ignored in legacy
 }
 
 #[inline]
@@ -22,7 +22,7 @@ pub fn send_ipi(hart_mask_addr: usize) -> SbiRet {
     // note(unsafe): if any load fault, should be handled by user or supervisor
     let hart_mask = unsafe { HartMask::from_addr(hart_mask_addr, max_hart_id()) };
     send_ipi_many(hart_mask);
-    SbiRet::ok(0)
+    SbiRet::ok(0) // the return value 0 is ignored in legacy
 }
 
 #[inline]

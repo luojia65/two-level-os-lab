@@ -6,9 +6,9 @@ mod ipi;
 mod legacy;
 mod timer;
 
-const EXTENSION_BASE: usize = 0x10;
-const EXTENSION_TIMER: usize = 0x54494D45;
-const EXTENSION_IPI: usize = 0x735049;
+pub const EXTENSION_BASE: usize = 0x10;
+pub const EXTENSION_TIMER: usize = 0x54494D45;
+pub const EXTENSION_IPI: usize = 0x735049;
 // const EXTENSION_RFENCE: usize = 0x52464E43;
 // const EXTENSION_HSM: usize = 0x48534D;
 

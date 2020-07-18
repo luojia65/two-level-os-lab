@@ -18,6 +18,11 @@ pub fn init_ipi<T: Ipi + Send + 'static>(ipi: T) {
     *IPI.lock() = Some(Box::new(ipi));
 }
 
+#[inline]
+pub fn probe_ipi() -> bool {
+    IPI.lock().as_ref().is_none()
+}
+
 pub(crate) fn send_ipi_many(hart_mask: HartMask) {
     if let Some(ipi) = IPI.lock().as_mut() {
         ipi.send_ipi_many(hart_mask)
