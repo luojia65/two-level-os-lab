@@ -7,13 +7,12 @@ use linked_list_allocator::LockedHeap;
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 const HEAP_SIZE: usize = 0x100_0000;
-static mut HEAP: [u8; HEAP_SIZE] = [0; HEAP_SIZE];
 
 const INTERVAL: u64 = 10_000_000;
 
 use riscv::register::{sie, sip, time, sstatus};
 use riscv_sbi::{base, legacy, println, HartMask};
-use riscv_sbi_rt::max_hart_id;
+use riscv_sbi_rt::{heap_start, max_hart_id};
 
 #[cfg(target_pointer_width = "64")]
 riscv_sbi_rt::boot_page_sv39! {
@@ -54,7 +53,7 @@ fn main(hartid: usize, dtb_pa: usize) {
         unsafe {
             HEAP_ALLOCATOR
                 .lock()
-                .init(HEAP.as_ptr() as usize, HEAP_SIZE);
+                .init(heap_start() as usize, HEAP_SIZE);
         }
         let mut hart_mask = HartMask::all(max_hart_id());
         hart_mask.clear(0);

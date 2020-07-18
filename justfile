@@ -40,7 +40,7 @@ asm: build
     @{{objdump}} -D {{m-firmware-file}} | less
 
 size: build
-    @{{size}} -A -x {{m-firmware-file}}
+    @{{size}} -A -x {{m-firmware-file}} 
 
 size-kernel: build
     @{{size}} -A -x {{s-kernel-file}}
