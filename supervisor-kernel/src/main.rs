@@ -6,7 +6,7 @@ extern crate alloc;
 use linked_list_allocator::LockedHeap;
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
-const HEAP_SIZE: usize = 0x100_0000;
+const HEAP_SIZE: usize = 512 * 1024;
 
 const INTERVAL: u64 = 10_000_000;
 
