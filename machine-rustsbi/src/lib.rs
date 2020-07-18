@@ -12,6 +12,7 @@ mod hart_mask;
 mod ipi;
 mod timer;
 mod logo;
+mod privileged;
 
 const SBI_SPEC_MAJOR: usize = 0;
 const SBI_SPEC_MINOR: usize = 2;
@@ -24,3 +25,4 @@ pub use hart_mask::HartMask;
 pub use ipi::{init_ipi, Ipi};
 pub use timer::{init_timer, Timer};
 pub use logo::LOGO;
+pub use privileged::enter_privileged;

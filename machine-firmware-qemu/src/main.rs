@@ -11,7 +11,7 @@ use core::alloc::Layout;
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
-use machine_rustsbi::println;
+use machine_rustsbi::{println, enter_privileged};
 
 use riscv::register::{
     mcause::{self, Exception, Interrupt, Trap},
@@ -145,31 +145,24 @@ fn main() -> ! {
     unsafe {
         mepc::write(_s_mode_start as usize);
         mstatus::set_mpp(MPP::Supervisor);
+        enter_privileged(mhartid::read(), 0x2333333366666666);
     }
-    unsafe {
-        llvm_asm!(
-            "
-        csrr    a0, mhartid
-        li      a1, 0x2333333366666666 /* todo */
-
-        call _enter_s_mode
-    _s_mode_start:
-        .option push
-        .option norelax
-    1:
-        auipc ra, %pcrel_hi(1f)
-        ld ra, %pcrel_lo(1b)(ra)
-        jr ra
-        .align  3
-    1:
-        .dword 0x80200000
-    .option pop
-    "
-        )
-    };
-
-    loop {}
 }
+
+global_asm!(
+        "
+_s_mode_start:
+    .option push
+    .option norelax
+1:
+    auipc ra, %pcrel_hi(1f)
+    ld ra, %pcrel_lo(1b)(ra)
+    jr ra
+    .align  3
+1:
+    .dword 0x80200000
+.option pop
+");
 
 global_asm!(
     "
@@ -231,8 +224,6 @@ _start_trap:
 
     addi    sp, sp, 16 * REGBYTES
 
-    .globl _enter_s_mode
-_enter_s_mode:
     csrrw   sp, mscratch, sp
     mret
 "

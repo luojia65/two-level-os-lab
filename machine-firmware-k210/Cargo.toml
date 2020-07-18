@@ -8,4 +8,7 @@ edition = "2018"
 
 [dependencies]
 riscv-rt = "0.7.2"
+riscv = "0.6"
+linked_list_allocator = "0.8"
+machine-rustsbi = { path = "../machine-rustsbi" }
 k210-hal = { git = "https://github.com/riscv-rust/k210-hal" }
