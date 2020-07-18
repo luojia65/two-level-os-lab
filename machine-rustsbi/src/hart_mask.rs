@@ -1,12 +1,21 @@
 use core::mem::size_of;
 
+/// Hart mask structure reference
+#[derive(Debug, Clone)]
 pub struct HartMask {
     bit_vector: *const usize,
     max_hart_id: usize,
 }
 
 impl HartMask {
-    // note(unsafe): must ensure all usize values in the bit vector is accessible
+    /// Construct a reference to a hart mask structure.
+    /// 
+    /// Caller should provide from its address from supervisor level, 
+    /// and a maximum hart number for maximum hart limit.
+    /// 
+    /// # Unsafety
+    /// 
+    /// Caller must ensure all usize values in the bit vector is accessible.
     pub unsafe fn from_addr(vaddr: usize, max_hart_id: usize) -> HartMask {
         HartMask {
             bit_vector: vaddr as *const usize,
@@ -14,10 +23,11 @@ impl HartMask {
         }
     }
 
+    /// Check if the `hart_id` is included in this hart mask structure.
     pub fn has_bit(&self, hart_id: usize) -> bool {
         assert!(hart_id <= self.max_hart_id);
         let (i, j) = split_index_usize(hart_id);
-        let cur_vector = unsafe { get_vaddr_usize(self.bit_vector.offset(i as isize)) };
+        let cur_vector = unsafe { get_vaddr_usize(self.bit_vector.add(i)) };
         cur_vector & (1 << j) != 0
     }
 }

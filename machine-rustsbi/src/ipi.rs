@@ -1,8 +1,12 @@
 use crate::hart_mask::HartMask;
 
+/// Inter-processor interrupt support
 pub trait Ipi: Send {
+    /// Get the maximum hart id available by this IPI support module
     fn max_hart_id(&self) -> usize;
-
+    /// Send an inter-processor interrupt to all the harts defined in `hart_mask`.
+    /// 
+    /// Interprocessor interrupts manifest at the receiving harts as the supervisor software interrupts.
     fn send_ipi_many(&mut self, hart_mask: HartMask);
 }
 
@@ -19,7 +23,7 @@ pub fn init_ipi<T: Ipi + Send + 'static>(ipi: T) {
 }
 
 #[inline]
-pub fn probe_ipi() -> bool {
+pub(crate) fn probe_ipi() -> bool {
     IPI.lock().as_ref().is_none()
 }
 

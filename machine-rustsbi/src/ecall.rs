@@ -22,8 +22,10 @@ const LEGACY_SEND_IPI: usize = 0x04;
 // const LEGACY_REMOTE_SFENCE_VMA_ASID: usize = 0x07;
 // const LEGACY_SHUTDOWN: usize = 0x08;
 
+/// Supervisor environment call handler function
+///
 /// You should call this function in your runtime's exception handler.
-/// If the incoming exception is caused by `ecall`,
+/// If the incoming exception is caused by supervisot `ecall`,
 /// call this function with parameters extracted from trap frame.
 #[inline]
 pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> SbiRet {

@@ -11,6 +11,7 @@ mod extension;
 mod hart_mask;
 mod ipi;
 mod timer;
+mod logo;
 
 const SBI_SPEC_MAJOR: usize = 0;
 const SBI_SPEC_MINOR: usize = 2;
@@ -22,5 +23,4 @@ pub use ecall::handle_ecall as ecall;
 pub use hart_mask::HartMask;
 pub use ipi::{init_ipi, Ipi};
 pub use timer::{init_timer, Timer};
-
-pub const LOGO: &'static str = include_str!("logo.txt");
+pub use logo::LOGO;
