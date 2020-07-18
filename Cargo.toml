@@ -5,6 +5,3 @@ members = [
     "machine-rustsbi",
     "supervisor-kernel",
 ]
-
-[patch.crates-io]
-riscv-rt = { git = "https://github.com/rust-embedded/riscv-rt" }
