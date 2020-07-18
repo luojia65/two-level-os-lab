@@ -69,13 +69,9 @@ fn main(hartid: usize, dtb_pa: usize) {
 }
 
 use riscv_sbi_rt::TrapFrame;
-use riscv::register::scause::Scause;
+
 #[export_name = "SupervisorTimer"]
-unsafe extern "C" fn supervisor_timer(
-    context: &mut TrapFrame,
-    _scause: Scause,
-    _stval: usize,
-) -> *mut TrapFrame {
+unsafe extern "C" fn supervisor_timer(context: &mut TrapFrame) -> *mut TrapFrame {
     static mut TICKS: usize = 0;
     legacy::set_timer(time::read64().wrapping_add(INTERVAL));
     TICKS += 1;
