@@ -5,3 +5,6 @@ members = [
     "machine-rustsbi",
     "supervisor-kernel",
 ]
+
+[patch.crates-io]
+riscv-rt = { path = "riscv-rt" }
