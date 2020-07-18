@@ -25,8 +25,29 @@ const LEGACY_SEND_IPI: usize = 0x04;
 /// Supervisor environment call handler function
 ///
 /// You should call this function in your runtime's exception handler.
-/// If the incoming exception is caused by supervisot `ecall`,
+/// If the incoming exception is caused by supervisor `ecall`,
 /// call this function with parameters extracted from trap frame.
+/// After this function returns, store the return value into `a0` and `a1` parameters.
+///
+/// This function also adapts to the legacy functions. 
+/// If the supervisor called any of legacy function, the `a0` and `a1` parameter
+/// is transferred to `SbiRet`'s error and value respectively.
+/// So you should store the result into `a0` and `a1` in any function calls including legacy functions.
+///
+/// # Example
+///
+/// A typical usage:
+///
+/// ```no_run
+/// fn exception(ctx: &mut TrapFrame) {
+///     // if mcause == Trap::Exception(Exception::SupervisorEnvCall) {
+///     let params = [ctx.a0, ctx.a1, ctx.a2, ctx.a3];
+///     let ans = rustsbi::ecall(ctx.a7, ctx.a6, params);
+///     ctx.a0 = ans.error;
+///     ctx.a1 = ans.value;
+///     // }
+/// }
+/// ```
 #[inline]
 pub fn handle_ecall(extension: usize, function: usize, param: [usize; 4]) -> SbiRet {
     match extension {
