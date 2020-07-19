@@ -5,6 +5,7 @@ m-firmware-file := build-path + "machine-firmware-k210"
 m-bin-file := build-path + "machine-firmware-k210.bin"
 
 objcopy := "rust-objcopy --binary-architecture=riscv64"
+size := "rust-size"
 
 build: firmware
     @{{objcopy}} {{m-firmware-file}} --strip-all -O binary {{m-bin-file}}
@@ -14,3 +15,6 @@ firmware:
 
 run: build
     @./kflash.py --port /dev/cu.usbserial-6552E58AA60 --terminal {{m-bin-file}}
+
+size: build
+    @{{size}} -A -x {{m-firmware-file}} 

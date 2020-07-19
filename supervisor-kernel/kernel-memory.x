@@ -4,13 +4,13 @@ MEMORY {
 }
 
 /* Use virtual address is okay if you have an initial boot page */
-PROVIDE(_stext = 0xffffffff80200000);
+_stext = 0xffffffff80200000;
 /* Modify this to provide bigger stack for each hart */
-PROVIDE(_hart_stack_size = 32K);
+_hart_stack_size = 32K;
 /* Modify this to set max hart number */
-PROVIDE(_max_hart_id = 7);
+_max_hart_id = 7;
 /* Modify this to add frame section size */
-PROVIDE(_heap_size = 512K);
+_heap_size = 512K;
 
 /* Map the runtime regions into memory areas */
 REGION_ALIAS("REGION_TEXT", DRAM);

@@ -82,5 +82,7 @@ _s_mode_start:
     ld ra, %pcrel_lo(1b)(ra)
     jr ra
 .align  3
-1:  .dword 0x80200000
+1:  .dword _sstack
 ");
+ 
+// todo: configurable target address
