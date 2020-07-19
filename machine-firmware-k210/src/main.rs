@@ -32,11 +32,11 @@ extern fn mp_hook() -> bool {
 fn main() -> ! {
     if mhartid::read() == 0 {
         extern "C" {
-            static mut _sheap: u8;
-            static _heap_size: u8;
+            fn _sheap();
+            fn _heap_size();
         }
-        let sheap = unsafe { &mut _sheap } as *mut _ as usize;
-        let heap_size = unsafe { &_heap_size } as *const u8 as usize;
+        let sheap = &mut _sheap as *mut _ as usize;
+        let heap_size = &_heap_size as *const _ as usize;
         unsafe {
             ALLOCATOR.lock().init(sheap, heap_size);
         }
@@ -74,15 +74,12 @@ fn main() -> ! {
 
 global_asm!(
     "
+    .section .text
+    .globl _s_mode_start
 _s_mode_start:
-.option push
-.option norelax
-1:
-auipc ra, %pcrel_hi(1f)
-ld ra, %pcrel_lo(1b)(ra)
-jr ra
+1:  auipc ra, %pcrel_hi(1f)
+    ld ra, %pcrel_lo(1b)(ra)
+    jr ra
 .align  3
-1:
-.dword 0x80200000
-.option pop
+1:  .dword 0x80200000
 ");
