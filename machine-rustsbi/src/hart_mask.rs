@@ -47,13 +47,13 @@ unsafe fn get_vaddr_usize(vaddr_ptr: *const usize) -> usize {
         csrrs   {tmp}, mstatus, {tmp}
         ld      {ans}, 0({vmem})
         csrw    mstatus, {tmp}
-    ", ans = out(reg) ans, vmem = in(reg) vaddr_ptr, tmp = out(reg) _);
+    ", ans = lateout(reg) ans, vmem = in(reg) vaddr_ptr, tmp = out(reg) _);
     #[cfg(target_pointer_width = "32")]
     asm!("
         li      {tmp}, (1 << 17)
         csrrs   {tmp}, mstatus, {tmp}
         lw      {ans}, 0({vmem})
         csrw    mstatus, {tmp}
-    ", ans = out(reg) ans, vmem = in(reg) vaddr_ptr, tmp = out(reg) _);
+    ", ans = lateout(reg) ans, vmem = in(reg) vaddr_ptr, tmp = out(reg) _);
     ans
 }
