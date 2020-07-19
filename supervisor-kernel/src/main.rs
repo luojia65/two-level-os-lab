@@ -50,7 +50,7 @@ fn main(hartid: usize, dtb_pa: usize) {
         println!("mvendorid    = {:?}", base::get_mvendorid());
         println!("marchid      = {:?}", base::get_marchid());
         println!("mimpid       = {:?}", base::get_mimpid());
-        println!("{:016x} {:016x}", heap_start() as usize, HEAP_SIZE);
+        // println!("{:016x} {:016x}", heap_start() as usize, HEAP_SIZE);
         unsafe {
             HEAP_ALLOCATOR.lock().init(heap_start() as usize, HEAP_SIZE);
         }

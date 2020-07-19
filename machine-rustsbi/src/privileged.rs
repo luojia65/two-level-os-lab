@@ -27,6 +27,5 @@ pub unsafe fn enter_privileged(mhartid: usize, dtb_pa: usize) -> ! {
     asm!("
         csrrw   sp, mscratch, sp
         mret
-    ", in("a0") mhartid, in("a1") dtb_pa, options(nomem));
-    unreachable!()
+    ", in("a0") mhartid, in("a1") dtb_pa, options(nomem, noreturn))
 }
