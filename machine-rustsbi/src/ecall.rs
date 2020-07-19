@@ -29,7 +29,7 @@ const LEGACY_SEND_IPI: usize = 0x04;
 /// call this function with parameters extracted from trap frame.
 /// After this function returns, store the return value into `a0` and `a1` parameters.
 ///
-/// This function also adapts to the legacy functions. 
+/// This function also adapts to the legacy functions.
 /// If the supervisor called any of legacy function, the `a0` and `a1` parameter
 /// is transferred to `SbiRet`'s error and value respectively.
 /// So you should store the result into `a0` and `a1` in any function calls including legacy functions.

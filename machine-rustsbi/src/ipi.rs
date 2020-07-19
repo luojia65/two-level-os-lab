@@ -5,7 +5,7 @@ pub trait Ipi: Send {
     /// Get the maximum hart id available by this IPI support module
     fn max_hart_id(&self) -> usize;
     /// Send an inter-processor interrupt to all the harts defined in `hart_mask`.
-    /// 
+    ///
     /// Interprocessor interrupts manifest at the receiving harts as the supervisor software interrupts.
     fn send_ipi_many(&mut self, hart_mask: HartMask);
 }

@@ -46,11 +46,10 @@ impl Ipi for Clint {
     fn max_hart_id(&self) -> usize {
         let ans: usize;
         unsafe {
-            llvm_asm!("
-            lui     t0, %hi(_max_hart_id)
-            add     t0, t0, %lo(_max_hart_id)
-            mv      $0, t0
-        ":"=r"(ans)::"t0")
+            asm!("
+                lui     {ans}, %hi(_max_hart_id)
+                add     {ans}, {ans}, %lo(_max_hart_id)
+            ", ans = out(reg) ans)
         };
         ans
     }

@@ -1,11 +1,11 @@
-/// Timer programmer support 
+/// Timer programmer support
 pub trait Timer: Send {
-    /// Programs the clock for next event after `stime_value` time. 
-    /// 
+    /// Programs the clock for next event after `stime_value` time.
+    ///
     /// `stime_value` is in absolute time. This function must clear the pending timer interrupt bit as well.
     ///
-    /// If the supervisor wishes to clear the timer interrupt without scheduling the next timer event, 
-    /// it can either request a timer interrupt infinitely far into the future (i.e., (uint64_t)-1), 
+    /// If the supervisor wishes to clear the timer interrupt without scheduling the next timer event,
+    /// it can either request a timer interrupt infinitely far into the future (i.e., (uint64_t)-1),
     /// or it can instead mask the timer interrupt by clearing sie.STIE.
     fn set_timer(&mut self, stime_value: u64);
 }

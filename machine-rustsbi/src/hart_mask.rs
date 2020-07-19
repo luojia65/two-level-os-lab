@@ -9,12 +9,12 @@ pub struct HartMask {
 
 impl HartMask {
     /// Construct a reference to a hart mask structure.
-    /// 
-    /// Caller should provide from its address from supervisor level, 
+    ///
+    /// Caller should provide from its address from supervisor level,
     /// and a maximum hart number for maximum hart limit.
-    /// 
+    ///
     /// # Unsafety
-    /// 
+    ///
     /// Caller must ensure all usize values in the bit vector is accessible.
     pub unsafe fn from_addr(vaddr: usize, max_hart_id: usize) -> HartMask {
         HartMask {

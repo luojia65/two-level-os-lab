@@ -5,10 +5,13 @@
 
 use core::alloc::Layout;
 use core::panic::PanicInfo;
+use k210_hal::{clock::Clocks, fpioa, pac, prelude::*};
 use linked_list_allocator::LockedHeap;
-use k210_hal::{prelude::*, pac, fpioa, clock::Clocks};
-use riscv::register::{mhartid, mepc, mstatus::{self, MPP}};
-use machine_rustsbi::{println, enter_privileged};
+use machine_rustsbi::{enter_privileged, println};
+use riscv::register::{
+    mepc, mhartid,
+    mstatus::{self, MPP},
+};
 
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
@@ -24,7 +27,7 @@ fn oom(_layout: Layout) -> ! {
 }
 
 #[export_name = "_mp_hook"]
-extern fn mp_hook() -> bool {
+extern "C" fn mp_hook() -> bool {
     mhartid::read() == 0
 }
 
@@ -42,21 +45,18 @@ fn main() -> ! {
         }
 
         let p = pac::Peripherals::take().unwrap();
-    
+
         let mut sysctl = p.SYSCTL.constrain();
         let fpioa = p.FPIOA.split(&mut sysctl.apb0);
         let clocks = Clocks::new();
         let _uarths_tx = fpioa.io5.into_function(fpioa::UARTHS_TX);
         let _uarths_rx = fpioa.io4.into_function(fpioa::UARTHS_RX);
         // Configure UART
-        let serial = p.UARTHS.configure(
-            115_200.bps(), 
-            &clocks
-        );
+        let serial = p.UARTHS.configure(115_200.bps(), &clocks);
         let (tx, rx) = serial.split();
         use machine_rustsbi::legacy_stdio::init_legacy_stdio_embedded_hal_fuse;
         init_legacy_stdio_embedded_hal_fuse(tx, rx);
-        
+
         println!("[rustsbi] Version 0.1.0");
 
         println!("{}", machine_rustsbi::LOGO);
@@ -83,6 +83,7 @@ _s_mode_start:
     jr ra
 .align  3
 1:  .dword _sstack
-");
- 
+"
+);
+
 // todo: configurable target address
