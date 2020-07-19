@@ -3,6 +3,7 @@
 #![feature(naked_functions)]
 #![feature(alloc_error_handler)]
 #![feature(llvm_asm)]
+#![feature(asm)]
 #![feature(global_asm)]
 
 mod hal;
