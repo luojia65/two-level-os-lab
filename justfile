@@ -39,6 +39,9 @@ run-opensbi: build
 asm: build
     @{{objdump}} -D {{m-firmware-file}} | less
 
+asm-kernel: build
+    @{{objdump}} -D {{s-kernel-file}} | less
+
 size: build
     @{{size}} -A -x {{m-firmware-file}} 
 

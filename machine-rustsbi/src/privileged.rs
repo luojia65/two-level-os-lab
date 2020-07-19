@@ -24,9 +24,9 @@
 /// ```
 #[inline]
 pub unsafe fn enter_privileged(mhartid: usize, dtb_pa: usize) -> ! {
-    llvm_asm!("
+    asm!("
         csrrw   sp, mscratch, sp
         mret
-    "::"{a0}"(mhartid), "{a1}"(dtb_pa));
+    ", in("a0") mhartid, in("a1") dtb_pa, options(nomem));
     unreachable!()
 }

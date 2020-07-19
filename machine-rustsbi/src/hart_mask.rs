@@ -41,17 +41,19 @@ fn split_index_usize(index: usize) -> (usize, usize) {
 #[inline]
 unsafe fn get_vaddr_usize(vaddr_ptr: *const usize) -> usize {
     let mut ans: usize;
-    // todo: 32 bit systems
-    llvm_asm!("
-        li      t0, (1 << 17)
-        mv      t1, $1
-        csrrs   t0, mstatus, t0
-        ld      t1, 0(t1)
-        csrw    mstatus, t0
-        mv      $0, t1
-    "
-        :"=r"(ans) 
-        :"r"(vaddr_ptr)
-        :"t0", "t1");
+    #[cfg(target_pointer_width = "64")]
+    asm!("
+        li      {tmp}, (1 << 17)
+        csrrs   {tmp}, mstatus, {tmp}
+        ld      {ans}, 0({vmem})
+        csrw    mstatus, {tmp}
+    ", ans = out(reg) ans, vmem = in(reg) vaddr_ptr, tmp = out(reg) _);
+    #[cfg(target_pointer_width = "32")]
+    asm!("
+        li      {tmp}, (1 << 17)
+        csrrs   {tmp}, mstatus, {tmp}
+        lw      {ans}, 0({vmem})
+        csrw    mstatus, {tmp}
+    ", ans = out(reg) ans, vmem = in(reg) vaddr_ptr, tmp = out(reg) _);
     ans
 }
