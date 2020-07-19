@@ -2,7 +2,7 @@ target := "riscv64imac-unknown-none-elf"
 mode := "debug"
 build-path := "target/" + target + "/" + mode + "/"
 m-firmware-file := build-path + "machine-firmware-qemu"
-m-bin-file := build-path + "machine-firmware.bin"
+m-bin-file := build-path + "machine-firmware-qemu.bin"
 s-kernel-file := build-path + "supervisor-kernel"
 s-bin-file := build-path + "supervisor-kernel.bin"
 

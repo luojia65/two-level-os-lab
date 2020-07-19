@@ -60,6 +60,7 @@ fn main() -> ! {
         println!("[rustsbi] Version 0.1.0");
 
         println!("{}", machine_rustsbi::LOGO);
+        println!("[rustsbi] Target device: K210");
         println!("[rustsbi] Kernel entry: 0x80200000");
     }
     extern "C" {
