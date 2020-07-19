@@ -7,6 +7,5 @@ REGION_ALIAS("REGION_BSS", SRAM);
 REGION_ALIAS("REGION_HEAP", SRAM);
 REGION_ALIAS("REGION_STACK", SRAM);
 
-PROVIDE(_heap_size = 128K);
-PROVIDE(_hart_stack_size = 64K);
-PROVIDE(_max_hart_id = 1);
+_hart_stack_size = 64K;
+_heap_size = 128K;
