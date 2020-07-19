@@ -54,6 +54,7 @@ fn main(hartid: usize, dtb_pa: usize) {
         unsafe {
             HEAP_ALLOCATOR.lock().init(heap_start() as usize, HEAP_SIZE);
         }
+        // todo: we should analyse dtb_pa to get the maximum hart id
         let mut hart_mask = HartMask::all(max_hart_id());
         hart_mask.clear(0);
         legacy::send_ipi(hart_mask);
