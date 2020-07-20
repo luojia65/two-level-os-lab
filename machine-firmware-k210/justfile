@@ -4,6 +4,7 @@ build-path := "../target/" + target + "/" + mode + "/"
 m-firmware-file := build-path + "machine-firmware-k210"
 m-bin-file := build-path + "machine-firmware-k210.bin"
 
+objdump := "riscv64-unknown-elf-objdump"
 objcopy := "rust-objcopy --binary-architecture=riscv64"
 size := "rust-size"
 
@@ -18,3 +19,6 @@ run: build
 
 size: build
     @{{size}} -A -x {{m-firmware-file}} 
+
+asm: build
+    @{{objdump}} -D {{m-firmware-file}} | less

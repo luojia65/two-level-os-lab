@@ -10,6 +10,11 @@ fn main() {
         .unwrap()
         .write_all(include_bytes!("memory.x"))
         .unwrap();
+    fs::File::create(out_dir.join("payload.x"))
+        .unwrap()
+        .write_all(include_bytes!("payload.x"))
+        .unwrap();
     println!("cargo:rerun-if-changed=memory.x");
+    println!("cargo:rerun-if-changed=payload.x");
     println!("cargo:rerun-if-changed=build.rs");
 }
