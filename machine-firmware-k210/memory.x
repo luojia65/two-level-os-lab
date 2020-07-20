@@ -1,6 +1,5 @@
 MEMORY {
-    /* actual length is 6M; shrink to reserve for operating system */
-    SRAM : ORIGIN = 0x80000000, LENGTH = 384K
+    SRAM : ORIGIN = 0x80000000, LENGTH = 6M
 }
 
 REGION_ALIAS("REGION_TEXT", SRAM);
@@ -12,4 +11,4 @@ REGION_ALIAS("REGION_STACK", SRAM);
 
 _max_hart_id = 1;
 _hart_stack_size = 64K;
-_heap_size = 128K;
+_heap_size = 256K;
